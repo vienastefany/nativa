@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Role {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @unique @db.VarChar(50)
+  descripcion String?   @db.VarChar(255)
+  activo      Boolean   @default(true)
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  updated_at  DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  
+  usuarios Usuario[]
+
+  @@map("roles")
+}
+
+model Organizacion {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @db.VarChar(150)
+  ruc         String?   @unique @db.VarChar(20)
+  direccion   String?   @db.VarChar(255)
+  telefono    String?   @db.VarChar(30)
+  correo      String?   @db.VarChar(150)
+  logo_url    String?   @db.VarChar(500)
+  activo      Boolean   @default(true)
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  updated_at  DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  
+  usuarios    Usuario[]
+  actividades ActividadFormativa[]
+
+  @@map("organizaciones")
+}
+
+model Usuario {
+  id               Int       @id @default(autoincrement())
+  rol_id           Int
+  organizacion_id  Int?
+  correo           String    @unique @db.VarChar(150)
+  password         String    @db.VarChar(255)
+  activo           Boolean   @default(true)
+  ultimo_acceso    DateTime? @db.DateTime(0)
+  created_at       DateTime  @default(now()) @db.Timestamp(0)
+  updated_at       DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  
+  rol              Role          @relation(fields: [rol_id], references: [id])
+  organizacion     Organizacion? @relation(fields: [organizacion_id], references: [id])
+  participante     Participante? 
+  actividadesCreadas ActividadFormativa[] @relation("creador")
+  asistenciasRegistradas Asistencia[]    @relation("registrador")
+
+  @@map("usuarios")
+}
+
+model Participante {
+  id          Int       @id @default(autoincrement())
+  usuario_id  Int?      @unique
+  nombres     String    @db.VarChar(100)
+  apellidos   String    @db.VarChar(150)
+  dni         String    @unique @db.VarChar(20)
+  telefono    String?   @db.VarChar(30)
+  direccion   String?   @db.VarChar(255)
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  updated_at  DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  
+  usuario      Usuario?       @relation(fields: [usuario_id], references: [id])
+  inscripciones Inscripcion[]
+  asistencias  Asistencia[]
+
+  @@map("participantes")
+}
+
+model TipoActividad {
+  id          Int       @id @default(autoincrement())
+  nombre      String    @unique @db.VarChar(100)
+  descripcion String?   @db.VarChar(255)
+  activo      Boolean   @default(true)
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  updated_at  DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  
+  actividades ActividadFormativa[]
+
+  @@map("tipos_actividad")
+}
+
+model ActividadFormativa {
+  id                  Int       @id @default(autoincrement())
+  organizacion_id     Int
+  tipo_actividad_id   Int
+  titulo              String    @db.VarChar(200)
+  descripcion         String?   @db.Text
+  instructor_nombres  String?   @db.VarChar(100)
+  instructor_apellidos String?  @db.VarChar(150)
+  instructor_profesion String?  @db.VarChar(150)
+  capacidad           Int?
+  estado              EstadoActividad @default(Borrador)
+  inscripciones_abiertas Boolean @default(false)
+  token_inscripcion   String?   @unique @db.VarChar(64)
+  creado_por          Int
+  created_at          DateTime  @default(now()) @db.Timestamp(0)
+  updated_at          DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  
+  organizacion  Organizacion       @relation(fields: [organizacion_id], references: [id])
+  tipo_actividad TipoActividad     @relation(fields: [tipo_actividad_id], references: [id])
+  creador       Usuario            @relation("creador", fields: [creado_por], references: [id])
+  sesiones      Sesion[]
+  inscripciones Inscripcion[]
+
+  @@map("actividades_formativas")
+}
+
+model Sesion {
+  id                     Int       @id @default(autoincrement())
+  actividad_formativa_id Int
+  fecha                  DateTime  @db.Date
+  hora_inicio            DateTime  @db.Time(0)
+  hora_fin               DateTime  @db.Time(0)
+  modalidad              Modalidad
+  lugar                  String?   @db.VarChar(255)
+  enlace_virtual         String?   @db.VarChar(500)
+  qr_token               String?   @unique @db.VarChar(255)
+  qr_desde               DateTime? @db.DateTime(0)
+  qr_hasta               DateTime? @db.DateTime(0)
+  estado                 EstadoSesion @default(Programada)
+  created_at             DateTime  @default(now()) @db.Timestamp(0)
+  updated_at             DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  
+  actividad_formativa ActividadFormativa @relation(fields: [actividad_formativa_id], references: [id])
+  asistencias         Asistencia[]
+
+  @@map("sesiones")
+}
+
+model Inscripcion {
+  id                     Int       @id @default(autoincrement())
+  actividad_formativa_id Int
+  participante_id        Int
+  estado                 EstadoInscripcion @default(Inscrita)
+  fecha_inscripcion      DateTime  @default(now()) @db.DateTime(0)
+  fecha_cancelacion      DateTime? @db.DateTime(0)
+  created_at             DateTime  @default(now()) @db.Timestamp(0)
+  updated_at             DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  
+  actividad_formativa ActividadFormativa @relation(fields: [actividad_formativa_id], references: [id])
+  participante        Participante       @relation(fields: [participante_id], references: [id])
+
+  @@unique([participante_id, actividad_formativa_id])
+  @@map("inscripciones")
+}
+
+model Asistencia {
+  id                 Int       @id @default(autoincrement())
+  sesion_id          Int
+  participante_id    Int
+  estado             EstadoAsistencia @default(Pendiente)
+  fecha_hora_registro DateTime? @db.DateTime(0)
+  metodo             MetodoAsistencia?
+  registrado_por     Int?
+  observacion        String?   @db.VarChar(255)
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  updated_at         DateTime  @default(now()) @updatedAt @db.Timestamp(0)
+  
+  sesion       Sesion       @relation(fields: [sesion_id], references: [id])
+  participante Participante @relation(fields: [participante_id], references: [id])
+  registrador  Usuario?     @relation("registrador", fields: [registrado_por], references: [id])
+
+  @@unique([sesion_id, participante_id])
+  @@map("asistencias")
+}
+
+enum EstadoActividad {
+  Borrador
+  Publicada
+  En_curso
+  Finalizada
+  Cancelada
+}
+
+enum EstadoSesion {
+  Programada
+  En_curso
+  Finalizada
+  Cancelada
+}
+
+enum EstadoInscripcion {
+  Inscrita
+  Cancelada
+}
+
+enum EstadoAsistencia {
+  Pendiente
+  Presente
+  Ausente
+}
+
+enum MetodoAsistencia {
+  QR
+  Codigo
+  Manual
+}
+
+enum Modalidad {
+  Presencial
+  Virtual
+  Hibrida
+}

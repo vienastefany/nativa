@@ -1,0 +1,71 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import {
+  SUPERADMIN,
+  ADMINISTRADOR,
+  SUBADMINISTRADOR,
+  PARTICIPANTE,
+} from "@/lib/roles";
+
+export { SUPERADMIN, ADMINISTRADOR, SUBADMINISTRADOR, PARTICIPANTE };
+
+/**
+ * Obtiene la sesión del servidor. Devuelve null si no hay sesión.
+ * Para uso en API Routes / Server Components donde se necesita
+ * control de error (sin redirección automática).
+ */
+export async function getSessionUser() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user) return null;
+  return session.user;
+}
+
+/**
+ * Verifica que el usuario autenticado tenga el rol SUPERADMIN.
+ * Devuelve true si es superadmin, false en cualquier otro caso
+ * (no autenticado o rol distinto).
+ */
+export async function isSuperAdmin() {
+  const user = await getSessionUser();
+  return user?.rol === SUPERADMIN;
+}
+
+/**
+ * Verifica que el usuario autenticado sea Administrador o Subadministrador.
+ */
+export async function isAdminOrSubadmin() {
+  const user = await getSessionUser();
+  return (
+    user?.rol === ADMINISTRADOR || user?.rol === SUBADMINISTRADOR
+  );
+}
+
+/**
+ * Puede administrar actividades formativas si es SuperAdmin
+ * o Administrador/Subadministrador de alguna organización.
+ */
+export async function canManageActividades() {
+  const user = await getSessionUser();
+  if (!user) return false;
+  if (user.rol === SUPERADMIN) return true;
+  return (
+    (user.rol === ADMINISTRADOR || user.rol === SUBADMINISTRADOR) &&
+    user.organizacionId != null
+  );
+}
+
+/**
+ * Devuelve la organización desde la cual el usuario puede operar.
+ * - SuperAdmin: null (puede operar sobre todas, escoge la org).
+ * - Admin/Subadm: su organizacionId (solo esa).
+ * - Otros roles: null (sin alcance de gestión).
+ */
+export async function getOrganizacionAlcance(): Promise<number | null> {
+  const user = await getSessionUser();
+  if (!user) return null;
+  if (user.rol === SUPERADMIN) return null;
+  if (user.rol === ADMINISTRADOR || user.rol === SUBADMINISTRADOR) {
+    return user.organizacionId ?? null;
+  }
+  return null;
+}
