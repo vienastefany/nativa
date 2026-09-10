@@ -94,42 +94,42 @@ export default async function DetalleOrganizacionPage({
       label: "Total actividades",
       valor: totalActividades,
       icon: Activity,
-      color: "text-blue-600 bg-blue-50",
+      tint: "bg-primary-50 text-primary-600",
     },
     {
       label: "Próximas / en curso",
       valor: actividadesProximas,
       icon: Calendar,
-      color: "text-green-600 bg-green-50",
+      tint: "bg-sky-50 text-sky-600",
     },
     {
       label: "Finalizadas",
       valor: actividadesFinalizadas,
       icon: Shield,
-      color: "text-purple-600 bg-purple-50",
+      tint: "bg-emerald-50 text-emerald-600",
     },
   ];
 
   return (
     <div>
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link
             href="/superadmin/organizaciones"
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition"
+            className="back-link"
           >
             <ArrowLeft size={16} />
             Volver a organizaciones
           </Link>
-          <h1 className="text-2xl font-bold text-gray-800 mt-2 flex items-center gap-3">
+          <h1 className="page-title mt-2 flex items-center gap-3">
             {organizacion.logo_url ? (
               <img
                 src={organizacion.logo_url}
                 alt={organizacion.nombre}
-                className="w-10 h-10 rounded-lg object-cover bg-gray-100"
+                className="h-10 w-10 rounded-xl border border-slate-100 object-cover bg-slate-100"
               />
             ) : (
-              <span className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
                 <Building2 size={20} />
               </span>
             )}
@@ -138,7 +138,7 @@ export default async function DetalleOrganizacionPage({
         </div>
         <Link
           href={`/superadmin/organizaciones/${organizacion.id}/editar`}
-          className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-50 transition self-start"
+          className="btn btn-secondary self-start"
         >
           <Pencil size={16} />
           Editar
@@ -146,7 +146,7 @@ export default async function DetalleOrganizacionPage({
       </div>
 
       {!organizacion.activo && (
-        <div className="mb-6 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-3 rounded-lg text-sm">
+        <div className="alert alert-warning mb-6">
           Esta organización está <strong>inactiva</strong>. Sus administradores
           no podrán operar normalmente hasta que se active.
         </div>
@@ -154,23 +154,21 @@ export default async function DetalleOrganizacionPage({
 
       {/* Información general */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Información general
-        </h2>
-        <div className="bg-white rounded-lg shadow p-6">
-          <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <h2 className="section-title">Información general</h2>
+        <div className="card p-6">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <dt className="text-sm text-gray-500">RUC</dt>
-              <dd className="text-gray-800 font-medium mt-1">
+              <dt className="text-sm text-slate-500">RUC</dt>
+              <dd className="mt-1 font-medium text-slate-800">
                 {organizacion.ruc || "—"}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Correo</dt>
-              <dd className="text-gray-800 font-medium mt-1 flex items-center gap-1.5">
+              <dt className="text-sm text-slate-500">Correo</dt>
+              <dd className="mt-1 flex items-center gap-1.5 font-medium text-slate-800">
                 {organizacion.correo ? (
                   <>
-                    <Mail size={14} className="text-gray-400" />
+                    <Mail size={14} className="text-slate-400" />
                     {organizacion.correo}
                   </>
                 ) : (
@@ -179,11 +177,11 @@ export default async function DetalleOrganizacionPage({
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Teléfono</dt>
-              <dd className="text-gray-800 font-medium mt-1 flex items-center gap-1.5">
+              <dt className="text-sm text-slate-500">Teléfono</dt>
+              <dd className="mt-1 flex items-center gap-1.5 font-medium text-slate-800">
                 {organizacion.telefono ? (
                   <>
-                    <Phone size={14} className="text-gray-400" />
+                    <Phone size={14} className="text-slate-400" />
                     {organizacion.telefono}
                   </>
                 ) : (
@@ -192,11 +190,11 @@ export default async function DetalleOrganizacionPage({
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Dirección</dt>
-              <dd className="text-gray-800 font-medium mt-1 flex items-center gap-1.5">
+              <dt className="text-sm text-slate-500">Dirección</dt>
+              <dd className="mt-1 flex items-center gap-1.5 font-medium text-slate-800">
                 {organizacion.direccion ? (
                   <>
-                    <MapPin size={14} className="text-gray-400" />
+                    <MapPin size={14} className="text-slate-400" />
                     {organizacion.direccion}
                   </>
                 ) : (
@@ -205,19 +203,17 @@ export default async function DetalleOrganizacionPage({
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Fecha de registro</dt>
-              <dd className="text-gray-800 font-medium mt-1">
+              <dt className="text-sm text-slate-500">Fecha de registro</dt>
+              <dd className="mt-1 font-medium text-slate-800">
                 {formatFecha(organizacion.created_at)}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Estado</dt>
+              <dt className="text-sm text-slate-500">Estado</dt>
               <dd className="mt-1">
                 <span
-                  className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                    organizacion.activo
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
+                  className={`badge ${
+                    organizacion.activo ? "badge-success" : "badge-danger"
                   }`}
                 >
                   {organizacion.activo ? "Activa" : "Inactiva"}
@@ -230,69 +226,67 @@ export default async function DetalleOrganizacionPage({
 
       {/* Administradores */}
       <section className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">
-            Administradores
-          </h2>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-title mb-0">Administradores</h2>
           <NuevoAdministrador
             organizacionId={organizacion.id}
             organizacionNombre={organizacion.nombre}
           />
         </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="card overflow-hidden">
           {administradoresList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-14 text-gray-400">
-              <Users size={40} className="mb-3" />
-              <p className="text-sm">
-                Aún no hay administradores asignados a esta organización.
+            <div className="empty-state">
+              <div className="empty-icon">
+                <Users size={24} />
+              </div>
+              <p className="font-medium text-slate-600">
+                Aún no hay administradores asignados a esta organización
+              </p>
+              <p className="mt-1 text-sm text-slate-400">
+                Usa el botón &quot;Nuevo administrador&quot; para asignar uno.
               </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="data-table">
                 <thead>
-                  <tr className="text-left text-gray-500 border-b border-gray-200 bg-gray-50">
-                    <th className="px-4 py-3 font-medium">Usuario</th>
-                    <th className="px-4 py-3 font-medium">Rol</th>
-                    <th className="px-4 py-3 font-medium">Estado</th>
-                    <th className="px-4 py-3 font-medium">Registro</th>
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Registro</th>
                   </tr>
                 </thead>
                 <tbody>
                   {administradoresList.map((u) => (
-                    <tr
-                      key={u.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition"
-                    >
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-gray-800">{u.correo}</p>
-                        <p className="text-xs text-gray-400">ID: {u.id}</p>
+                    <tr key={u.id}>
+                      <td>
+                        <p className="font-medium text-slate-800">{u.correo}</p>
+                        <p className="text-xs text-slate-400">ID: {u.id}</p>
                       </td>
-                      <td className="px-4 py-3">
+                      <td>
                         <span
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          className={`badge ${
                             u.rol.nombre === "Administrador"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-indigo-100 text-indigo-700"
+                              ? "badge-primary"
+                              : "badge-info"
                           }`}
                         >
                           <Shield size={12} />
                           {u.rol.nombre}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td>
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                            u.activo
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-500"
+                          className={`badge ${
+                            u.activo ? "badge-success" : "badge-muted"
                           }`}
                         >
                           {u.activo ? "Activo" : "Inactivo"}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">
+                      <td className="text-slate-500">
                         {formatFecha(u.created_at)}
                       </td>
                     </tr>
@@ -306,65 +300,66 @@ export default async function DetalleOrganizacionPage({
 
       {/* Resumen de actividades */}
       <section>
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Actividades formativas
-        </h2>
+        <h2 className="section-title">Actividades formativas</h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="mb-6 grid grid-cols-1 gap-5 md:grid-cols-3">
           {resumenCards.map((card) => {
             const Icon = card.icon;
             return (
-              <div
-                key={card.label}
-                className="bg-white rounded-lg shadow p-6 flex items-center justify-between"
-              >
-                <div>
-                  <p className="text-sm text-gray-500">{card.label}</p>
-                  <p className="text-2xl font-bold text-gray-800 mt-1">
-                    {card.valor}
-                  </p>
-                </div>
-                <div className={`${card.color} p-3 rounded-full`}>
-                  <Icon size={22} />
+              <div key={card.label} className="card card-hover p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm text-slate-500">{card.label}</p>
+                    <p className="mt-1 text-2xl font-bold tracking-tight text-slate-900">
+                      {card.valor}
+                    </p>
+                  </div>
+                  <div
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${card.tint}`}
+                  >
+                    <Icon size={22} />
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="card overflow-hidden">
           {totalActividades === 0 ? (
-            <div className="flex flex-col items-center justify-center py-14 text-gray-400">
-              <FileText size={40} className="mb-3" />
-              <p className="text-sm">
-                Esta organización aún no tiene actividades formativas.
+            <div className="empty-state">
+              <div className="empty-icon">
+                <FileText size={24} />
+              </div>
+              <p className="font-medium text-slate-600">
+                Esta organización aún no tiene actividades formativas
+              </p>
+              <p className="mt-1 text-sm text-slate-400">
+                Las actividades se podrán crear desde el módulo correspondiente.
               </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="data-table">
                 <thead>
-                  <tr className="text-left text-gray-500 border-b border-gray-200 bg-gray-50">
-                    <th className="px-4 py-3 font-medium">Actividad</th>
-                    <th className="px-4 py-3 font-medium">Estado</th>
-                    <th className="px-4 py-3 font-medium">Registro</th>
+                  <tr>
+                    <th>Actividad</th>
+                    <th>Estado</th>
+                    <th>Registro</th>
                   </tr>
                 </thead>
                 <tbody>
                   {organizacion.actividades.map((a) => (
-                    <tr
-                      key={a.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition"
-                    >
-                      <td className="px-4 py-3 font-medium text-gray-800">
+                    <tr key={a.id}>
+                      <td className="font-medium text-slate-800">
                         {a.titulo}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                      <td>
+                        <span className="badge badge-muted">
                           {estadoActividadLabel[a.estado] || a.estado}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-500">
+                      <td className="text-slate-500">
                         {formatFecha(a.created_at)}
                       </td>
                     </tr>

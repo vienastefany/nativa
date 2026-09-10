@@ -86,12 +86,12 @@ const ESTADO_LABELS: Record<string, string> = {
   Cancelada: "Cancelada",
 };
 
-const ESTADO_COLORS: Record<string, string> = {
-  Borrador: "bg-gray-100 text-gray-600",
-  Publicada: "bg-blue-100 text-blue-700",
-  En_curso: "bg-green-100 text-green-700",
-  Finalizada: "bg-emerald-100 text-emerald-700",
-  Cancelada: "bg-red-100 text-red-600",
+const ESTADO_SELECT: Record<string, string> = {
+  Borrador: "bg-slate-50 text-slate-600",
+  Publicada: "bg-primary-50 text-primary-700",
+  En_curso: "bg-sky-50 text-sky-700",
+  Finalizada: "bg-emerald-50 text-emerald-700",
+  Cancelada: "bg-red-50 text-red-600",
 };
 
 const ESTADO_SESION_LABELS: Record<string, string> = {
@@ -101,16 +101,22 @@ const ESTADO_SESION_LABELS: Record<string, string> = {
   Cancelada: "Cancelada",
 };
 
-const ESTADO_SESION_COLORS: Record<string, string> = {
-  Programada: "bg-gray-100 text-gray-600",
-  En_curso: "bg-green-100 text-green-700",
-  Finalizada: "bg-emerald-100 text-emerald-700",
-  Cancelada: "bg-red-100 text-red-600",
+const ESTADO_SESION_BADGE: Record<string, string> = {
+  Programada: "badge-muted",
+  En_curso: "badge-info",
+  Finalizada: "badge-success",
+  Cancelada: "badge-danger",
 };
 
-const inputCls =
-  "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm";
-const labelCls = "block text-sm font-medium text-gray-700 mb-1";
+const ESTADO_SESION_SELECT: Record<string, string> = {
+  Programada: "bg-slate-50 text-slate-600",
+  En_curso: "bg-sky-50 text-sky-700",
+  Finalizada: "bg-emerald-50 text-emerald-700",
+  Cancelada: "bg-red-50 text-red-600",
+};
+
+const inputCls = "input";
+const labelCls = "label";
 
 export default function ActividadDetalle({
   actividadId,
@@ -369,14 +375,14 @@ export default function ActividadDetalle({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="animate-spin text-blue-600" size={32} />
+        <div className="spinner" />
       </div>
     );
   }
 
   if (error || !actividad) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+      <div className="alert alert-error">
         {error || "Actividad no encontrada."}
       </div>
     );
@@ -395,17 +401,17 @@ export default function ActividadDetalle({
 
   return (
     <div>
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <Link
             href={basePath}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition"
+            className="back-link"
           >
             <ArrowLeft size={16} />
             Volver a actividades
           </Link>
-          <h1 className="text-2xl font-bold text-gray-800 mt-2 flex items-center gap-3">
-            <span className="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center">
+          <h1 className="page-title mt-2 flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
               <BookOpen size={20} />
             </span>
             {actividad.titulo}
@@ -413,49 +419,42 @@ export default function ActividadDetalle({
         </div>
         <Link
           href={`${basePath}/${actividad.id}/editar`}
-          className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-50 transition self-start"
+          className="btn btn-secondary self-start"
         >
           <Pencil size={16} />
           Editar
         </Link>
       </div>
 
-      {toast && (
-        <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-          {toast}
-        </div>
-      )}
+      {toast && <div className="alert alert-success mb-6">{toast}</div>}
 
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
-          Información general
-        </h2>
-        <div className="bg-white rounded-lg shadow p-6">
-          <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <h2 className="section-title">Información general</h2>
+        <div className="card p-6">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <dt className="text-sm text-gray-500">Tipo</dt>
-              <dd className="text-gray-800 font-medium mt-1">
+              <dt className="text-sm text-slate-500">Tipo</dt>
+              <dd className="mt-1 font-medium text-slate-800">
                 {actividad.tipo_actividad.nombre}
               </dd>
             </div>
             {mostrarOrganizacion && (
               <div>
-                <dt className="text-sm text-gray-500">Organización</dt>
-                <dd className="text-gray-800 font-medium mt-1">
+                <dt className="text-sm text-slate-500">Organización</dt>
+                <dd className="mt-1 font-medium text-slate-800">
                   {actividad.organizacion.nombre}
                 </dd>
               </div>
             )}
             <div>
-              <dt className="text-sm text-gray-500">Estado</dt>
+              <dt className="text-sm text-slate-500">Estado</dt>
               <dd className="mt-1 flex items-center gap-2">
                 <select
                   value={actividad.estado}
                   onChange={(e) => cambiarEstadoActividad(e.target.value)}
                   disabled={cambiandoEstado}
-                  className={`px-2 py-1.5 pr-7 border border-gray-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500 disabled:opacity-50 ${
-                    ESTADO_COLORS[actividad.estado] ??
-                    "bg-gray-100 text-gray-600"
+                  className={`select px-2 py-1.5 pr-7 text-xs ${
+                    ESTADO_SELECT[actividad.estado] ?? "text-slate-600"
                   }`}
                   title="Cambiar estado de la actividad"
                 >
@@ -466,64 +465,64 @@ export default function ActividadDetalle({
                   ))}
                 </select>
                 {cambiandoEstado && (
-                  <Loader2 size={16} className="animate-spin text-blue-600" />
+                  <Loader2 size={16} className="animate-spin text-primary-600" />
                 )}
               </dd>
               <dd className="mt-1">
                 {actividad.inscripciones_abiertas ? (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-700">
+                  <span className="badge badge-success">
                     Inscripciones abiertas
                   </span>
                 ) : (
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500">
+                  <span className="badge badge-muted">
                     Inscripciones cerradas
                   </span>
                 )}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Capacidad</dt>
-              <dd className="text-gray-800 font-medium mt-1 flex items-center gap-1.5">
-                <Users size={14} className="text-gray-400" />
+              <dt className="text-sm text-slate-500">Capacidad</dt>
+              <dd className="mt-1 flex items-center gap-1.5 font-medium text-slate-800">
+                <Users size={14} className="text-slate-400" />
                 {actividad.capacidad ?? "Sin límite"}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Inscritos</dt>
-              <dd className="text-gray-800 font-medium mt-1 flex items-center gap-1.5">
-                <Users size={14} className="text-gray-400" />
+              <dt className="text-sm text-slate-500">Inscritos</dt>
+              <dd className="mt-1 flex items-center gap-1.5 font-medium text-slate-800">
+                <Users size={14} className="text-slate-400" />
                 {actividad.total_inscritos}
                 {actividad.capacidad ? ` / ${actividad.capacidad}` : ""}
               </dd>
             </div>
             <div>
-              <dt className="text-sm text-gray-500">Creado por</dt>
-              <dd className="text-gray-800 font-medium mt-1 truncate">
+              <dt className="text-sm text-slate-500">Creado por</dt>
+              <dd className="mt-1 truncate font-medium text-slate-800">
                 {actividad.creador.correo}
               </dd>
             </div>
           </dl>
 
           {actividad.descripcion && (
-            <div className="mt-6 pt-6 border-t border-gray-100">
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">
+            <div className="mt-6 border-t border-slate-100 pt-6">
+              <p className="whitespace-pre-wrap text-sm text-slate-700">
                 {actividad.descripcion}
               </p>
             </div>
           )}
 
           {(actividad.instructor_nombres || actividad.instructor_profesion) && (
-            <div className="mt-6 pt-6 border-t border-gray-100 flex items-start gap-3">
-              <span className="p-2 rounded-full bg-indigo-50 text-indigo-600">
+            <div className="mt-6 flex items-start gap-3 border-t border-slate-100 pt-6">
+              <span className="rounded-full bg-indigo-50 p-2 text-indigo-600">
                 <User size={18} />
               </span>
               <div>
-                <p className="font-semibold text-gray-800">
+                <p className="font-semibold text-slate-800">
                   {actividad.instructor_nombres || "Instructor no asignado"}{" "}
                   {actividad.instructor_apellidos ?? ""}
                 </p>
                 {actividad.instructor_profesion && (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-slate-500">
                     {actividad.instructor_profesion}
                   </p>
                 )}
@@ -535,29 +534,29 @@ export default function ActividadDetalle({
 
       {/* Enlace de inscripción */}
       <section className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-          <Share2 size={18} className="text-gray-400" />
+        <h2 className="section-title flex items-center gap-2">
+          <Share2 size={18} className="text-slate-400" />
           Enlace de inscripción
         </h2>
-        <div className="bg-white rounded-lg shadow p-6">
-          <p className="text-sm text-gray-500 mb-3">
+        <div className="card p-6">
+          <p className="mb-3 text-sm text-slate-500">
             Comparte este enlace para que los participantes se inscriban sin
             necesidad de cuenta.
             {actividad.estado !== "Publicada" &&
               " El enlace solo funcionará cuando la actividad tenga estado \"Publicada\"."}
           </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-mono text-gray-700 truncate">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <code className="flex-1 truncate rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-mono text-sm text-slate-700">
               {enlaceInscripcion || "Cargando..."}
             </code>
             <button
               onClick={copiarEnlace}
               disabled={!enlaceInscripcion}
-              className="inline-flex items-center gap-1.5 border border-gray-300 text-gray-700 text-sm font-semibold px-3 py-2 rounded-lg hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn btn-secondary shrink-0"
               title="Copiar enlace"
             >
               {copiado ? (
-                <Check size={16} className="text-green-600" />
+                <Check size={16} className="text-emerald-600" />
               ) : (
                 <Copy size={16} />
               )}
@@ -569,83 +568,77 @@ export default function ActividadDetalle({
 
       {/* Inscritos */}
       <section className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-            <ClipboardList size={18} className="text-gray-400" />
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-title mb-0 flex items-center gap-2">
+            <ClipboardList size={18} className="text-slate-400" />
             Inscritos
-            <span className="text-sm font-normal text-gray-400">
+            <span className="text-sm font-normal text-slate-400">
               ({actividad.total_inscritos}
               {actividad.capacidad ? ` / ${actividad.capacidad}` : ""})
             </span>
           </h2>
         </div>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="card overflow-hidden">
           {inscritos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-              <Users size={36} className="mb-3" />
-              <p className="text-sm">
+            <div className="empty-state">
+              <div className="empty-icon">
+                <Users size={24} />
+              </div>
+              <p className="font-medium text-slate-600">
                 {actividad.inscripciones_abiertas && actividad.estado === "Publicada"
-                  ? "Aún no hay inscritos. Comparte el enlace de inscripción."
-                  : "Las inscripciones no están abiertas todavía."}
+                  ? "Aún no hay inscritos"
+                  : "Las inscripciones no están abiertas todavía"}
+              </p>
+              <p className="mt-1 text-sm text-slate-400">
+                {actividad.inscripciones_abiertas && actividad.estado === "Publicada"
+                  ? "Comparte el enlace de inscripción para empezar a recibir participantes."
+                  : "Las inscripciones se habilitarán cuando la actividad esté publicada."}
               </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="data-table">
                 <thead>
-                  <tr className="text-left text-gray-500 border-b border-gray-200 bg-gray-50">
-                    <th className="px-4 py-3 font-medium">Participante</th>
-                    <th className="px-4 py-3 font-medium">DNI</th>
-                    <th className="px-4 py-3 font-medium">Teléfono</th>
-                    <th className="px-4 py-3 font-medium">Fecha de inscripción</th>
-                    <th className="px-4 py-3 font-medium">Estado</th>
-                    <th className="px-4 py-3 font-medium text-right">Acciones</th>
+                  <tr>
+                    <th>Participante</th>
+                    <th>DNI</th>
+                    <th>Teléfono</th>
+                    <th>Fecha de inscripción</th>
+                    <th>Estado</th>
+                    <th className="text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {inscritos.map((i) => (
-                    <tr
-                      key={i.id}
-                      className={`border-b border-gray-100 transition ${
-                        i.estado === "Cancelada" ? "opacity-60" : "hover:bg-gray-50"
-                      }`}
-                    >
-                      <td className="px-4 py-3">
+                    <tr key={i.id} className={i.estado === "Cancelada" ? "opacity-60" : ""}>
+                      <td>
                         <div className="flex items-center gap-2.5">
-                          <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-50 text-xs font-bold text-primary-700">
                             {i.participante.nombres.charAt(0)}
                             {i.participante.apellidos.charAt(0)}
                           </span>
-                          <span className="text-gray-800 font-medium">
+                          <span className="font-medium text-slate-800">
                             {i.participante.nombres} {i.participante.apellidos}
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 font-mono">
-                        {i.participante.dni}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {i.participante.telefono ?? "—"}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {formatFecha(i.fecha_inscripcion)}
-                      </td>
-                      <td className="px-4 py-3">
+                      <td className="font-mono">{i.participante.dni}</td>
+                      <td>{i.participante.telefono ?? "—"}</td>
+                      <td>{formatFecha(i.fecha_inscripcion)}</td>
+                      <td>
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                            i.estado === "Inscrita"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-gray-100 text-gray-500"
+                          className={`badge ${
+                            i.estado === "Inscrita" ? "badge-success" : "badge-muted"
                           }`}
                         >
                           {i.estado === "Inscrita" ? "Inscrito" : "Cancelado"}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td>
                         <div className="flex items-center justify-end">
                           {accionInscritoId === i.id ? (
-                            <Loader2 size={16} className="animate-spin text-blue-600" />
+                            <Loader2 size={16} className="animate-spin text-primary-600" />
                           ) : (
                             <button
                               onClick={() =>
@@ -654,15 +647,11 @@ export default function ActividadDetalle({
                                   i.estado === "Inscrita" ? "Cancelada" : "Inscrita"
                                 )
                               }
-                              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition ${
-                                i.estado === "Inscrita"
-                                  ? "border-red-200 text-red-600 hover:bg-red-50"
-                                  : "border-green-200 text-green-600 hover:bg-green-50"
+                              className={`btn btn-sm ${
+                                i.estado === "Inscrita" ? "btn-danger" : "btn-success"
                               }`}
                             >
-                              {i.estado === "Inscrita"
-                                ? "Cancelar"
-                                : "Reactivar"}
+                              {i.estado === "Inscrita" ? "Cancelar" : "Reactivar"}
                             </button>
                           )}
                         </div>
@@ -678,17 +667,17 @@ export default function ActividadDetalle({
 
       {/* Sesiones */}
       <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-800">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="section-title mb-0">
             Sesiones
-            <span className="ml-2 text-sm font-normal text-gray-400">
+            <span className="ml-2 text-sm font-normal text-slate-400">
               ({actividad.sesiones.length})
             </span>
           </h2>
           {!formAbierto && (
             <button
               onClick={abrirNuevaSesion}
-              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+              className="btn btn-primary"
             >
               <Plus size={16} />
               Nueva sesión
@@ -697,28 +686,26 @@ export default function ActividadDetalle({
         </div>
 
         {formError && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-            {formError}
-          </div>
+          <div className="alert alert-error mb-4">{formError}</div>
         )}
 
         {/* Formulario crear/editar sesión */}
         {formAbierto && (
-          <div className="mb-6 bg-white rounded-lg shadow p-6 border border-blue-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-800">
+          <div className="card mb-6 border-primary-100 p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-semibold text-slate-800">
                 {sesionEditando ? "Editar sesión" : "Nueva sesión"}
               </h3>
               <button
                 onClick={cerrarForm}
-                className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 transition"
+                className="icon-btn"
                 title="Cerrar"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label className={labelCls}>
                   Fecha <span className="text-red-500">*</span>
@@ -758,7 +745,7 @@ export default function ActividadDetalle({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
                 <label className={labelCls}>
                   Modalidad <span className="text-red-500">*</span>
@@ -803,17 +790,17 @@ export default function ActividadDetalle({
               )}
             </div>
 
-            <div className="flex justify-end gap-3 mt-5 pt-4 border-t border-gray-100">
+            <div className="mt-5 flex justify-end gap-3 border-t border-slate-100 pt-4">
               <button
                 onClick={cerrarForm}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition"
+                className="btn btn-secondary"
               >
                 Cancelar
               </button>
               <button
                 onClick={guardarSesion}
                 disabled={enviando}
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn btn-primary"
               >
                 {enviando ? (
                   <Loader2 size={16} className="animate-spin" />
@@ -826,17 +813,19 @@ export default function ActividadDetalle({
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="card overflow-hidden">
           {actividad.sesiones.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-14 text-gray-400">
-              <CalendarDays size={40} className="mb-3" />
-              <p className="text-sm">
-                Esta actividad aún no tiene sesiones programadas.
+            <div className="empty-state">
+              <div className="empty-icon">
+                <CalendarDays size={24} />
+              </div>
+              <p className="font-medium text-slate-600">
+                Esta actividad aún no tiene sesiones programadas
               </p>
               {!formAbierto && (
                 <button
                   onClick={abrirNuevaSesion}
-                  className="mt-4 inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-semibold"
+                  className="btn btn-secondary mt-4"
                 >
                   <Plus size={16} />
                   Agregar la primera sesión
@@ -845,70 +834,67 @@ export default function ActividadDetalle({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="data-table">
                 <thead>
-                  <tr className="text-left text-gray-500 border-b border-gray-200 bg-gray-50">
-                    <th className="px-4 py-3 font-medium">Fecha</th>
-                    <th className="px-4 py-3 font-medium">Horario</th>
-                    <th className="px-4 py-3 font-medium">Modalidad</th>
-                    <th className="px-4 py-3 font-medium">Ubicación</th>
-                    <th className="px-4 py-3 font-medium">Estado</th>
-                    <th className="px-4 py-3 font-medium text-right">Acciones</th>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Horario</th>
+                    <th>Modalidad</th>
+                    <th>Ubicación</th>
+                    <th>Estado</th>
+                    <th className="text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {actividad.sesiones.map((s) => (
-                    <tr
-                      key={s.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 transition"
-                    >
-                      <td className="px-4 py-3 text-gray-700 font-medium">
+                    <tr key={s.id}>
+                      <td className="font-medium text-slate-700">
                         {formatFecha(s.fecha)}
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td>
                         <span className="inline-flex items-center gap-1.5">
-                          <Clock size={14} className="text-gray-400" />
+                          <Clock size={14} className="text-slate-400" />
                           {dateToHoraStr(s.hora_inicio)} -{" "}
                           {dateToHoraStr(s.hora_fin)}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="text-gray-700">{s.modalidad}</span>
+                      <td>
+                        <span className="text-slate-700">{s.modalidad}</span>
                       </td>
-                      <td className="px-4 py-3 text-gray-600">
+                      <td>
                         {s.modalidad === "Virtual" || s.modalidad === "Hibrida" ? (
                           s.enlace_virtual ? (
                             <a
                               href={s.enlace_virtual}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 text-blue-600 hover:underline"
+                              className="inline-flex items-center gap-1.5 text-primary-600 hover:underline"
                             >
                               <Video size={14} />
                               Enlace virtual
                             </a>
                           ) : (
-                            <span className="text-gray-400">—</span>
+                            <span className="text-slate-400">—</span>
                           )
                         ) : s.lugar ? (
                           <span className="inline-flex items-center gap-1.5">
-                            <MapPin size={14} className="text-gray-400" />
+                            <MapPin size={14} className="text-slate-400" />
                             {s.lugar}
                           </span>
                         ) : (
-                          <span className="text-gray-400">—</span>
+                          <span className="text-slate-400">—</span>
                         )}
                       </td>
-                      <td className="px-4 py-3">
+                      <td>
                         <span
-                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                            ESTADO_SESION_COLORS[s.estado] ?? "bg-gray-100 text-gray-600"
+                          className={`badge ${
+                            ESTADO_SESION_BADGE[s.estado] ?? "badge-muted"
                           }`}
                         >
                           {ESTADO_SESION_LABELS[s.estado] || s.estado}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
+                      <td>
                         <div className="flex items-center justify-end gap-1">
                           <select
                             value={s.estado}
@@ -916,7 +902,9 @@ export default function ActividadDetalle({
                               cambiarEstadoSesion(s, e.target.value)
                             }
                             disabled={accionId === s.id}
-                            className="px-2 py-1.5 pr-7 border border-gray-300 rounded-lg text-xs bg-white focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                            className={`select px-2 py-1.5 pr-7 text-xs ${
+                              ESTADO_SESION_SELECT[s.estado] ?? "text-slate-600"
+                            }`}
                             title="Cambiar estado"
                           >
                             {Object.keys(ESTADO_SESION_LABELS).map((k) => (
@@ -926,12 +914,12 @@ export default function ActividadDetalle({
                             ))}
                           </select>
                           {accionId === s.id ? (
-                            <Loader2 size={16} className="animate-spin text-blue-600 ml-1" />
+                            <Loader2 size={16} className="ml-1 animate-spin text-primary-600" />
                           ) : null}
                           <button
                             onClick={() => abrirEditarSesion(s)}
                             title="Editar sesión"
-                            className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition"
+                            className="icon-btn hover:text-primary-600"
                           >
                             <Pencil size={16} />
                           </button>
@@ -939,7 +927,7 @@ export default function ActividadDetalle({
                             onClick={() => eliminarSesion(s)}
                             disabled={accionId === s.id}
                             title="Eliminar sesión"
-                            className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-red-600 transition disabled:opacity-50"
+                            className="icon-btn hover:text-red-600"
                           >
                             <Trash2 size={16} />
                           </button>

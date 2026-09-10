@@ -10,7 +10,6 @@ import {
   BookOpen,
   CalendarDays,
   Users,
-  Loader2,
 } from "lucide-react";
 
 interface OrganizacionMini {
@@ -39,12 +38,12 @@ interface ActividadesListProps {
   showOrgFilter?: boolean;
 }
 
-const ESTADO_COLORS: Record<string, string> = {
-  Borrador: "bg-gray-100 text-gray-600",
-  Publicada: "bg-blue-100 text-blue-700",
-  En_curso: "bg-green-100 text-green-700",
-  Finalizada: "bg-emerald-100 text-emerald-700",
-  Cancelada: "bg-red-100 text-red-600",
+const ESTADO_BADGE: Record<string, string> = {
+  Borrador: "badge-muted",
+  Publicada: "badge-primary",
+  En_curso: "badge-info",
+  Finalizada: "badge-success",
+  Cancelada: "badge-danger",
 };
 
 const ESTADO_LABELS: Record<string, string> = {
@@ -115,47 +114,43 @@ export default function ActividadesList({
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Actividades</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="page-title">Actividades</h1>
+          <p className="page-subtitle">
             Gestiona las actividades formativas y sus sesiones.
           </p>
         </div>
         <Link
           href={`${baseUrl}/nueva`}
-          className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+          className="btn btn-primary self-start"
         >
           <Plus size={18} />
           Nueva actividad
         </Link>
       </div>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert alert-error mb-4">{error}</div>}
 
       {/* Filtros */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">
           <Search
             size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
           />
           <input
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar por título..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+            className="input pl-10"
           />
         </div>
         <select
           value={estado}
           onChange={(e) => setEstado(e.target.value)}
-          className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="select sm:w-44"
         >
           <option value="">Todos los estados</option>
           <option value="Borrador">Borrador</option>
@@ -168,7 +163,7 @@ export default function ActividadesList({
           <select
             value={orgFilter}
             onChange={(e) => setOrgFilter(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg bg-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="select sm:w-52"
           >
             <option value="">Todas las organizaciones</option>
             {orgs.map((o) => (
@@ -181,100 +176,98 @@ export default function ActividadesList({
       </div>
 
       {/* Tabla */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="card overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-blue-600" size={32} />
+            <div className="spinner" />
           </div>
         ) : actividades.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <BookOpen size={40} className="mb-3" />
-            <p className="text-sm">No se encontraron actividades</p>
+          <div className="empty-state">
+            <div className="empty-icon">
+              <BookOpen size={24} />
+            </div>
+            <p className="font-medium text-slate-600">
+              No se encontraron actividades
+            </p>
+            <p className="mt-1 text-sm text-slate-400">
+              {q || estado || orgFilter
+                ? "Ajusta los filtros de búsqueda para ver más resultados."
+                : "Crea tu primera actividad para empezar."}
+            </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="data-table">
               <thead>
-                <tr className="text-left text-gray-500 border-b border-gray-200 bg-gray-50">
-                  <th className="px-4 py-3 font-medium">Actividad</th>
-                  {showOrgFilter && (
-                    <th className="px-4 py-3 font-medium">Organización</th>
-                  )}
-                  <th className="px-4 py-3 font-medium">Estado</th>
-                  <th className="px-4 py-3 font-medium">Inscripciones</th>
-                  <th className="px-4 py-3 font-medium text-center">Sesiones</th>
-                  <th className="px-4 py-3 font-medium text-center">Inscritos</th>
-                  <th className="px-4 py-3 font-medium">Registro</th>
-                  <th className="px-4 py-3 font-medium text-right">Acciones</th>
+                <tr>
+                  <th className="px-4">Actividad</th>
+                  {showOrgFilter && <th>Organización</th>}
+                  <th>Estado</th>
+                  <th>Inscripciones</th>
+                  <th className="text-center">Sesiones</th>
+                  <th className="text-center">Inscritos</th>
+                  <th>Registro</th>
+                  <th className="text-right">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {actividades.map((a) => (
-                  <tr
-                    key={a.id}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition"
-                  >
-                    <td className="px-4 py-3">
-                      <p className="font-semibold text-gray-800">{a.titulo}</p>
-                      <p className="text-xs text-gray-400">
+                  <tr key={a.id}>
+                    <td>
+                      <p className="font-semibold text-slate-800">{a.titulo}</p>
+                      <p className="text-xs text-slate-400">
                         {a.tipo_actividad_nombre}
                         {a.instructor_nombres &&
                           ` · ${a.instructor_nombres} ${a.instructor_apellidos ?? ""}`}
                       </p>
                     </td>
-                    {showOrgFilter && (
-                      <td className="px-4 py-3 text-gray-600">
-                        {a.organizacion.nombre}
-                      </td>
-                    )}
-                    <td className="px-4 py-3">
+                    {showOrgFilter && <td>{a.organizacion.nombre}</td>}
+                    <td>
                       <span
-                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                          ESTADO_COLORS[a.estado] ?? "bg-gray-100 text-gray-600"
-                        }`}
+                        className={`badge ${ESTADO_BADGE[a.estado] ?? "badge-muted"}`}
                       >
                         {ESTADO_LABELS[a.estado] || a.estado}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td>
                       <span
                         className={`text-xs font-medium ${
                           a.inscripciones_abiertas
-                            ? "text-green-600"
-                            : "text-gray-400"
+                            ? "text-emerald-600"
+                            : "text-slate-400"
                         }`}
                       >
                         {a.inscripciones_abiertas ? "Abiertas" : "Cerradas"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-600">
+                    <td className="text-center">
                       <span className="inline-flex items-center gap-1">
-                        <CalendarDays size={14} className="text-gray-400" />
+                        <CalendarDays size={14} className="text-slate-400" />
                         {a.total_sesiones}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center text-gray-600">
+                    <td className="text-center">
                       <span className="inline-flex items-center gap-1">
-                        <Users size={14} className="text-gray-400" />
+                        <Users size={14} className="text-slate-400" />
                         {a.total_inscritos}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">
+                    <td className="text-slate-500">
                       {formatFecha(a.created_at)}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
+                    <td>
+                      <div className="flex items-center justify-end gap-1">
                         <Link
                           href={`${baseUrl}/${a.id}`}
                           title="Ver detalle"
-                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition"
+                          className="icon-btn hover:text-primary-600"
                         >
                           <Eye size={18} />
                         </Link>
                         <Link
                           href={`${baseUrl}/${a.id}/editar`}
                           title="Editar"
-                          className="p-2 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-blue-600 transition"
+                          className="icon-btn hover:text-primary-600"
                         >
                           <Pencil size={18} />
                         </Link>

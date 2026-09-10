@@ -37,9 +37,8 @@ interface ActividadFormProps {
   initialData?: InitialData;
 }
 
-const inputCls =
-  "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm";
-const labelCls = "block text-sm font-medium text-gray-700 mb-1";
+const inputCls = "input";
+const labelCls = "label";
 
 export default function ActividadForm({
   modo,
@@ -154,7 +153,7 @@ export default function ActividadForm({
   };
 
   return (
-    <div className="max-w-2xl">
+    <div className="mx-auto max-w-2xl">
       <div className="mb-6">
         <Link
           href={
@@ -162,25 +161,21 @@ export default function ActividadForm({
               ? basePath
               : `${basePath}/${organizacionId}`
           }
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition"
+          className="back-link"
         >
           <ArrowLeft size={16} />
           Volver
         </Link>
-        <h1 className="text-2xl font-bold text-gray-800 mt-2">
+        <h1 className="page-title mt-2">
           {modo === "crear" ? "Nueva actividad" : "Editar actividad"}
         </h1>
       </div>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert alert-error mb-4">{error}</div>}
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-lg shadow p-6 space-y-4"
+        className="card space-y-5 p-6"
       >
         {mostrarOrgSelector && (
           <div>
@@ -204,9 +199,9 @@ export default function ActividadForm({
         )}
 
         {!mostrarOrgSelector && organizacionIdFijo && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
-            <p className="text-xs text-gray-500">Organización</p>
-            <p className="text-sm font-medium text-gray-800 mt-0.5">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <p className="text-xs text-slate-500">Organización</p>
+            <p className="mt-0.5 text-sm font-medium text-slate-800">
               {initialData?.organizacion?.nombre ?? `ID: ${organizacionIdFijo}`}
             </p>
           </div>
@@ -252,12 +247,12 @@ export default function ActividadForm({
             value={form.descripcion}
             onChange={(e) => setField("descripcion", e.target.value)}
             placeholder="Descripción breve de la actividad (opcional)"
-            className={`${inputCls} min-h-[80px]`}
+            className="textarea"
             maxLength={2000}
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Nombres del instructor</label>
             <input
@@ -284,7 +279,7 @@ export default function ActividadForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Profesión del instructor</label>
             <input
@@ -319,28 +314,28 @@ export default function ActividadForm({
             onChange={(e) =>
               setField("inscripciones_abiertas", e.target.checked)
             }
-            className="h-4 w-4 text-blue-600 rounded"
+            className="checkbox"
           />
-          <label htmlFor="inscripciones" className="text-sm text-gray-700">
+          <label htmlFor="inscripciones" className="text-sm text-slate-700">
             Inscripciones abiertas
           </label>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+        <div className="flex justify-end gap-3 border-t border-slate-100 pt-5">
           <Link
             href={
               modo === "crear"
                 ? basePath
                 : `${basePath}/${organizacionId}`
             }
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition"
+            className="btn btn-secondary"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary"
           >
             {loading ? (
               <Loader2 size={18} className="animate-spin" />

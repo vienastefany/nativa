@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { UserPlus, X, Loader2 } from "lucide-react";
+import { UserPlus, X, Loader2, ShieldCheck } from "lucide-react";
 
 interface NuevoAdministradorProps {
   organizacionId: number;
@@ -77,55 +77,53 @@ export default function NuevoAdministrador({
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
+        className="btn btn-primary"
       >
         <UserPlus size={18} />
         Nuevo administrador
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-800">
-                Nuevo administrador
-              </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+          <div className="card w-full max-w-md rounded-2xl p-6 shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+                  <ShieldCheck size={20} />
+                </span>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Nuevo administrador
+                </h3>
+              </div>
               <button
                 onClick={() => setOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 transition"
+                className="icon-btn"
+                aria-label="Cerrar"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="mb-4 text-sm text-slate-500">
               Se asignará a la organización{" "}
-              <span className="font-semibold text-gray-700">
+              <span className="font-semibold text-slate-700">
                 {organizacionNombre}
               </span>
               .
             </p>
 
-            {error && (
-              <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+            {error && <div className="alert alert-error mb-4">{error}</div>}
             {success && (
-              <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-                {success}
-              </div>
+              <div className="alert alert-success mb-4">{success}</div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Rol
-                </label>
+                <label className="label">Rol</label>
                 <select
                   value={form.rol}
                   onChange={(e) => setForm({ ...form, rol: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                  className="input"
                 >
                   <option value="Administrador">Administrador</option>
                   <option value="Subadministrador">Subadministrador</option>
@@ -133,22 +131,18 @@ export default function NuevoAdministrador({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Correo electrónico
-                </label>
+                <label className="label">Correo electrónico</label>
                 <input
                   type="email"
                   value={form.correo}
                   onChange={(e) => setForm({ ...form, correo: e.target.value })}
                   placeholder="usuario@org.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                  className="input"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contraseña
-                </label>
+                <label className="label">Contraseña</label>
                 <input
                   type="password"
                   value={form.password}
@@ -156,7 +150,7 @@ export default function NuevoAdministrador({
                     setForm({ ...form, password: e.target.value })
                   }
                   placeholder="Mínimo 6 caracteres"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm"
+                  className="input"
                 />
               </div>
 
@@ -164,14 +158,14 @@ export default function NuevoAdministrador({
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition"
+                  className="btn btn-secondary"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50"
+                  className="btn btn-primary"
                 >
                   {loading && <Loader2 size={16} className="animate-spin" />}
                   Crear usuario

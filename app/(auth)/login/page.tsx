@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, GraduationCap } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -53,33 +53,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">
+        <div className="card rounded-2xl p-8 shadow-[0_4px_12px_rgba(15,23,42,0.06),0_16px_40px_rgba(15,23,42,0.1)]">
+          <div className="mb-8 text-center">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-primary-500 shadow-lg shadow-primary-600/20">
+              <GraduationCap size={28} className="text-white" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               Sistema de Gestión
             </h1>
-            <p className="text-gray-600 mt-2">
+            <p className="mt-1.5 text-sm text-slate-500">
               Actividades Formativas y Asistencia
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-                {error}
-              </div>
-            )}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {error && <div className="alert alert-error">{error}</div>}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="label" htmlFor="correo">
                 Correo Electrónico
               </label>
               <input
+                id="correo"
                 type="email"
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                autoComplete="email"
+                className="input"
                 placeholder="usuario@ejemplo.com"
                 value={formData.correo}
                 onChange={(e) =>
@@ -89,14 +90,16 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="label" htmlFor="password">
                 Contraseña
               </label>
               <div className="relative">
                 <input
+                  id="password"
                   type={showPassword ? "text" : "password"}
                   required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition pr-10"
+                  autoComplete="current-password"
+                  className="input pr-10"
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) =>
@@ -105,7 +108,8 @@ export default function LoginPage() {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -116,11 +120,11 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn btn-primary w-full py-2.5"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="animate-spin mr-2" size={20} />
+                  <Loader2 className="animate-spin" size={20} />
                   Iniciando sesión...
                 </>
               ) : (
@@ -129,6 +133,11 @@ export default function LoginPage() {
             </button>
           </form>
         </div>
+
+        <p className="mt-6 text-center text-xs text-slate-400">
+          © {new Date().getFullYear()} Sistema de Gestión de Actividades
+          Formativas
+        </p>
       </div>
     </div>
   );

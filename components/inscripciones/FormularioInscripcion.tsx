@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Send, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  Loader2,
+  Send,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 
 interface FormularioInscripcionProps {
   token: string;
 }
 
-const inputCls =
-  "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm";
-const labelCls = "block text-sm font-medium text-gray-700 mb-1";
+const inputCls = "input";
+const labelCls = "label";
 
 export default function FormularioInscripcion({
   token,
@@ -66,10 +70,12 @@ export default function FormularioInscripcion({
 
   if (exito) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-6 text-center">
-        <CheckCircle2 size={36} className="text-green-600 mx-auto mb-3" />
-        <p className="text-green-800 font-semibold">{exito}</p>
-        <p className="text-sm text-green-600 mt-1">
+      <div className="flex flex-col items-center rounded-2xl border border-emerald-100 bg-emerald-50 px-6 py-8 text-center">
+        <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-100">
+          <CheckCircle2 size={28} className="text-emerald-600" />
+        </div>
+        <p className="font-semibold text-emerald-800">{exito}</p>
+        <p className="mt-1 text-sm text-emerald-600">
           Nos vemos en la actividad.
         </p>
       </div>
@@ -79,13 +85,13 @@ export default function FormularioInscripcion({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-          <AlertCircle size={16} />
+        <div className="alert alert-error">
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className={labelCls}>
             Nombres <span className="text-red-500">*</span>
@@ -116,7 +122,7 @@ export default function FormularioInscripcion({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label className={labelCls}>
             DNI <span className="text-red-500">*</span>
@@ -153,7 +159,7 @@ export default function FormularioInscripcion({
       <button
         type="submit"
         disabled={enviando}
-        className="w-full inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn btn-primary w-full py-2.5"
       >
         {enviando ? (
           <Loader2 size={18} className="animate-spin" />

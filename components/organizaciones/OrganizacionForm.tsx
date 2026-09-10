@@ -19,9 +19,8 @@ interface OrganizacionFormProps {
   };
 }
 
-const inputCls =
-  "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition text-sm";
-const labelCls = "block text-sm font-medium text-gray-700 mb-1";
+const inputCls = "input";
+const labelCls = "label";
 
 export default function OrganizacionForm({
   modo,
@@ -108,7 +107,7 @@ export default function OrganizacionForm({
   };
 
   return (
-    <div className="max-w-2xl">
+    <div className="mx-auto max-w-2xl">
       <div className="mb-6">
         <Link
           href={
@@ -116,30 +115,26 @@ export default function OrganizacionForm({
               ? "/superadmin/organizaciones"
               : `/superadmin/organizaciones/${organizacionId}`
           }
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition"
+          className="back-link"
         >
           <ArrowLeft size={16} />
           Volver
         </Link>
-        <h1 className="text-2xl font-bold text-gray-800 mt-2">
+        <h1 className="page-title mt-2">
           {modo === "crear" ? "Nueva organización" : "Editar organización"}
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="page-subtitle">
           {modo === "crear"
             ? "Registra una nueva organización en el sistema."
             : `Actualizando la información de la organización #${organizacionId}.`}
         </p>
       </div>
 
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="alert alert-error mb-4">{error}</div>}
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-lg shadow p-6 space-y-4"
+        className="card space-y-5 p-6"
       >
         <div>
           <label className={labelCls}>
@@ -180,7 +175,7 @@ export default function OrganizacionForm({
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <label className={labelCls}>Teléfono</label>
             <input
@@ -217,13 +212,13 @@ export default function OrganizacionForm({
           />
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+        <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+          <label className="flex items-center gap-2 text-sm text-slate-700">
             <input
               type="checkbox"
               checked={form.activo}
               onChange={(e) => setField("activo", e.target.checked)}
-              className="h-4 w-4 text-blue-600 rounded"
+              className="checkbox"
             />
             Organización activa
           </label>
@@ -236,14 +231,14 @@ export default function OrganizacionForm({
                 ? "/superadmin/organizaciones"
                 : `/superadmin/organizaciones/${organizacionId}`
             }
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition"
+            className="btn btn-secondary"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn btn-primary"
           >
             {loading ? (
               <Loader2 size={18} className="animate-spin" />
