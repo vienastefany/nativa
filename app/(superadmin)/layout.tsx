@@ -57,16 +57,16 @@ export default function SuperAdminLayout({
   const navLinkCls = (href: string) =>
     `flex items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors ${
       isActive(href)
-        ? "bg-primary-50 text-primary-700"
-        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+        ? "bg-[#f1edfc] text-[#6b5bd0]"
+        : "text-[#5a627a] hover:bg-[#f7f4ff] hover:text-[#0e1c3c]"
     }`;
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-[#fbfaff]">
       {/* Sidebar */}
-      <aside className="flex w-64 shrink-0 flex-col border-r border-slate-200/80 bg-white">
-        <div className="flex items-center gap-3 border-b border-slate-200/80 px-5 py-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-500 shadow-sm shadow-primary-600/20">
+      <aside className="flex w-64 shrink-0 flex-col border-r border-[#efeaf8] bg-white">
+        <div className="flex items-center gap-3 border-b border-[#f0ecfb] px-5 py-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c6ce0] to-[#a89af5] shadow-sm shadow-[#7c6ce0]/30">
             <GraduationCap size={20} className="text-white" />
           </div>
           <div>
@@ -86,14 +86,14 @@ export default function SuperAdminLayout({
                 href={item.href}
                 className={navLinkCls(item.href)}
               >
-                <Icon size={18} className={isActive(item.href) ? "text-primary-600" : ""} />
+                <Icon size={18} className={isActive(item.href) ? "text-[#7c6ce0]" : "text-[#8b93ab]"}/>
                 <span>{item.name}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="border-t border-slate-200/80 p-3">
+        <div className="border-t border-[#f0ecfb] p-3">
           <button
             onClick={() => signOut()}
             className="flex w-full items-center gap-3 rounded-lg px-3.5 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-red-50 hover:text-red-600"

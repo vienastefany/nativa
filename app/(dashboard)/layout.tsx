@@ -7,9 +7,21 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Calendar,
+  Users,
   LogOut,
   GraduationCap,
+  Sparkles,
 } from "lucide-react";
+
+const menuItems = [
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  {
+    name: "Actividades",
+    href: "/dashboard/actividades",
+    icon: Calendar,
+  },
+  { name: "Usuarios", href: "/dashboard/usuarios", icon: Users },
+];
 
 export default function DashboardLayout({
   children,
@@ -21,7 +33,7 @@ export default function DashboardLayout({
 
   if (status === "loading") {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-[#fbfaff]">
         <div className="spinner" />
       </div>
     );
@@ -31,84 +43,126 @@ export default function DashboardLayout({
     redirect("/login");
   }
 
-  const navLinkCls = (href: string, active: boolean) =>
-    `flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors ${
-      active
-        ? "bg-primary-50 text-primary-700"
-        : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+  const isActive = (href: string) =>
+    href === "/dashboard"
+      ? pathname === href
+      : pathname.startsWith(href);
+
+  const navLinkCls = (href: string) =>
+    `flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium transition-all duration-200 ${
+      isActive(href)
+        ? "bg-[#f1edfc] text-[#6b5bd0]"
+        : "text-[#5a627a] hover:bg-[#f7f4ff] hover:text-[#0e1c3c]"
     }`;
 
+  const iconCls = (href: string) =>
+    isActive(href) ? "text-[#7c6ce0]" : "text-[#8b93ab]";
+
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl flex-col px-4 py-3 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-600 to-primary-500 shadow-sm shadow-primary-600/20">
-                <GraduationCap size={18} className="text-white" />
-              </div>
-              <div>
-                <h1 className="text-base font-bold tracking-tight text-slate-900">
-                  Sistema de Gestión
-                </h1>
-                <p className="text-xs text-slate-500">
-                  Actividades formativas
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 lg:hidden">
-              <button
-                onClick={() => signOut()}
-                aria-label="Cerrar sesión"
-                className="icon-btn text-red-600 hover:bg-red-50 hover:text-red-700"
+    <div className="flex min-h-screen bg-[#fbfaff]">
+      {/* Sidebar (lg+) */}
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-[#efeaf8] bg-white lg:flex">
+        <div className="flex items-center gap-3 border-b border-[#f0ecfb] px-5 py-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c6ce0] to-[#a89af5] shadow-sm shadow-[#7c6ce0]/30">
+            <GraduationCap size={20} className="text-white" />
+          </div>
+          <div>
+            <h1 className="text-base font-bold leading-tight tracking-tight text-[#0e1c3c]">
+              Sistema de Gestión
+            </h1>
+            <p className="text-xs text-[#8b93ab]">Actividades formativas</p>
+          </div>
+        </div>
+
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={navLinkCls(item.href)}
               >
-                <LogOut size={18} />
-              </button>
+                <Icon size={18} className={iconCls(item.href)} />
+                <span>{item.name}</span>
+                {isActive(item.href) && (
+                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-[#7c6ce0]" />
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="border-t border-[#f0ecfb] p-3">
+          <div className="mb-2 flex items-center gap-3 rounded-xl bg-[#f7f4ff] px-3.5 py-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#7c6ce0] to-[#a89af5]">
+              <span className="text-sm font-bold text-white">
+                {session.user?.correo?.charAt(0).toUpperCase() ?? "U"}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold text-[#0e1c3c]">
+                {session.user?.correo}
+              </p>
+              <p className="text-xs text-[#8b93ab]">{session.user?.rol}</p>
             </div>
           </div>
-
-          <nav className="mt-3 flex items-center gap-1 lg:mt-0">
-            <Link
-              href="/dashboard"
-              className={navLinkCls("/dashboard", pathname === "/dashboard")}
-            >
-              <LayoutDashboard size={16} />
-              Dashboard
-            </Link>
-            <Link
-              href="/dashboard/actividades"
-              className={navLinkCls(
-                "/dashboard/actividades",
-                pathname.startsWith("/dashboard/actividades")
-              )}
-            >
-              <Calendar size={16} />
-              Actividades
-            </Link>
-
-            <div className="ml-2 hidden items-center gap-3 border-l border-slate-200 pl-4 lg:flex">
-              <div className="text-right">
-                <p className="text-sm font-medium leading-tight text-slate-800">
-                  {session.user?.correo}
-                </p>
-                <p className="text-xs text-slate-500">{session.user?.rol}</p>
-              </div>
-              <button
-                onClick={() => signOut()}
-                className="btn btn-secondary btn-sm"
-                title="Cerrar sesión"
-              >
-                <LogOut size={16} />
-                Salir
-              </button>
-            </div>
-          </nav>
+          <button
+            onClick={() => signOut()}
+            className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#5a627a] transition-all duration-200 hover:bg-[#fdeef3] hover:text-[#c94f7c]"
+          >
+            <LogOut size={18} />
+            <span>Cerrar sesión</span>
+          </button>
         </div>
-      </header>
+      </aside>
 
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">
-        {children}
-      </main>
+      {/* Contenido principal */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* Barra superior (móvil) */}
+        <header className="sticky top-0 z-30 border-b border-[#efeaf8] bg-white/90 backdrop-blur lg:hidden">
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#7c6ce0] to-[#a89af5]">
+                <Sparkles size={16} className="text-white" />
+              </div>
+              <h1 className="text-sm font-bold tracking-tight text-[#0e1c3c]">
+                Sistema de Gestión
+              </h1>
+            </div>
+            <button
+              onClick={() => signOut()}
+              aria-label="Cerrar sesión"
+              className="icon-btn text-[#c94f7c] hover:bg-[#fdeef3]"
+            >
+              <LogOut size={18} />
+            </button>
+          </div>
+          <nav className="flex gap-1 overflow-x-auto px-4 pb-3">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200 ${
+                    isActive(item.href)
+                      ? "bg-[#f1edfc] text-[#6b5bd0]"
+                      : "text-[#5a627a] hover:bg-[#f7f4ff]"
+                  }`}
+                >
+                  <Icon size={16} />
+                  {item.name}
+                </Link>
+              );
+            })}
+          </nav>
+        </header>
+
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 lg:px-8">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }
