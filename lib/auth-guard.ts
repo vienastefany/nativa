@@ -1,13 +1,13 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { getUser } from "@/lib/db/repository";
 import {
   SUPERADMIN,
   ADMINISTRADOR,
-  SUBADMINISTRADOR,
   PARTICIPANTE,
 } from "@/lib/roles";
 
-export { SUPERADMIN, ADMINISTRADOR, SUBADMINISTRADOR, PARTICIPANTE };
+export { SUPERADMIN, ADMINISTRADOR, PARTICIPANTE };
 
 /**
  * Obtiene la sesión del servidor. Devuelve null si no hay sesión.
@@ -17,7 +17,10 @@ export { SUPERADMIN, ADMINISTRADOR, SUBADMINISTRADOR, PARTICIPANTE };
 export async function getSessionUser() {
   const session = await getServerSession(authOptions);
   if (!session?.user) return null;
-  return session.user;
+  const current = await getUser(Number(session.user.id));
+  if (!current?.activo || ![SUPERADMIN, ADMINISTRADOR, PARTICIPANTE].includes(current.rol.nombre)) return null;
+  return { ...session.user, rol: current.rol.nombre, rolId: current.rol_id,
+    organizacionId: current.organizacion_id, organizacionNombre: current.organizacion?.nombre ?? null };
 }
 
 /**
@@ -31,25 +34,25 @@ export async function isSuperAdmin() {
 }
 
 /**
- * Verifica que el usuario autenticado sea Administrador o Subadministrador.
+ * Verifica que el usuario autenticado sea Administrador.
  */
-export async function isAdminOrSubadmin() {
+export async function isAdministrador() {
   const user = await getSessionUser();
   return (
-    user?.rol === ADMINISTRADOR || user?.rol === SUBADMINISTRADOR
+    user?.rol === ADMINISTRADOR
   );
 }
 
 /**
  * Puede administrar actividades formativas si es SuperAdmin
- * o Administrador/Subadministrador de alguna organización.
+ * o Administrador de alguna organización.
  */
 export async function canManageActividades() {
   const user = await getSessionUser();
   if (!user) return false;
   if (user.rol === SUPERADMIN) return true;
   return (
-    (user.rol === ADMINISTRADOR || user.rol === SUBADMINISTRADOR) &&
+    (user.rol === ADMINISTRADOR) &&
     user.organizacionId != null
   );
 }
@@ -57,14 +60,14 @@ export async function canManageActividades() {
 /**
  * Devuelve la organización desde la cual el usuario puede operar.
  * - SuperAdmin: null (puede operar sobre todas, escoge la org).
- * - Admin/Subadm: su organizacionId (solo esa).
+ * - Administrador: su organizacionId (solo esa).
  * - Otros roles: null (sin alcance de gestión).
  */
 export async function getOrganizacionAlcance(): Promise<number | null> {
   const user = await getSessionUser();
   if (!user) return null;
   if (user.rol === SUPERADMIN) return null;
-  if (user.rol === ADMINISTRADOR || user.rol === SUBADMINISTRADOR) {
+  if (user.rol === ADMINISTRADOR) {
     return user.organizacionId ?? null;
   }
   return null;

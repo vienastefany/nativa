@@ -1,5 +1,7 @@
+import { isDuplicateEntry } from "@/lib/db";
+import type { FiltroOrganizaciones } from "@/lib/db/repository";
+import { listOrganizations, createOrganization } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { isSuperAdmin } from "@/lib/auth-guard";
 
 export async function GET(request: NextRequest) {
@@ -12,10 +14,10 @@ export async function GET(request: NextRequest) {
   const estado = searchParams.get("estado");
 
   try {
-    const where: { nombre?: { contains: string }; activo?: boolean } = {};
+    const where: FiltroOrganizaciones = {};
 
     if (q) {
-      where.nombre = { contains: q };
+      where.nombre = q;
     }
     if (estado === "activo") {
       where.activo = true;
@@ -23,45 +25,9 @@ export async function GET(request: NextRequest) {
       where.activo = false;
     }
 
-    const organizaciones = await prisma.organizacion.findMany({
-      where,
-      orderBy: { id: "desc" },
-      include: {
-        _count: {
-          select: {
-            actividades: true,
-          },
-        },
-        usuarios: {
-          select: {
-            id: true,
-            rol: {
-              select: { nombre: true },
-            },
-          },
-        },
-      },
-    });
+    const organizaciones = await listOrganizations(where);
 
-    const data = organizaciones.map((org) => {
-      const administradores = org.usuarios.filter((u) =>
-        ["Administrador", "Subadministrador"].includes(u.rol.nombre)
-      ).length;
-      return {
-        id: org.id,
-        nombre: org.nombre,
-        ruc: org.ruc,
-        correo: org.correo,
-        telefono: org.telefono,
-        logo_url: org.logo_url,
-        activo: org.activo,
-        created_at: org.created_at,
-        cantidad_administradores: administradores,
-        cantidad_actividades: org._count.actividades,
-      };
-    });
-
-    return NextResponse.json(data);
+    return NextResponse.json(organizaciones);
   } catch (error) {
     console.error("Error al listar organizaciones:", error);
     return NextResponse.json(
@@ -100,8 +66,7 @@ export async function POST(request: NextRequest) {
     const activo =
       typeof body.activo === "boolean" ? body.activo : true;
 
-    const organizacion = await prisma.organizacion.create({
-      data: {
+    const organizacion = await createOrganization({
         nombre,
         ruc,
         direccion,
@@ -109,13 +74,11 @@ export async function POST(request: NextRequest) {
         correo,
         logo_url,
         activo,
-      },
-    });
+      });
 
     return NextResponse.json(organizacion, { status: 201 });
   } catch (error) {
-    const err = error as { code?: string };
-    if (err.code === "P2002") {
+    if (isDuplicateEntry(error)) {
       return NextResponse.json(
         { error: "Ya existe una organización con ese RUC" },
         { status: 409 }

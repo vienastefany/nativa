@@ -1,15 +1,14 @@
+import { getUser, getRole, updateUser } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import {
   getSessionUser,
   SUPERADMIN,
   ADMINISTRADOR,
-  SUBADMINISTRADOR,
 } from "@/lib/auth-guard";
 
 type Params = { params: Promise<{ id: string }> };
 
-const ROLES_EDITABLES = [ADMINISTRADOR, SUBADMINISTRADOR];
+const ROLES_EDITABLES = [ADMINISTRADOR];
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   const user = await getSessionUser();
@@ -35,16 +34,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     );
   }
 
-  const target = await prisma.usuario.findUnique({
-    where: { id: targetId },
-    select: {
-      id: true,
-      correo: true,
-      activo: true,
-      organizacion_id: true,
-      rol: { select: { id: true, nombre: true } },
-    },
-  });
+  const target = await getUser(targetId);
   if (!target) {
     return NextResponse.json(
       { error: "Usuario no encontrado" },
@@ -95,7 +85,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   if (typeof body.rol === "string") {
     if (!ROLES_EDITABLES.includes(body.rol)) {
       return NextResponse.json(
-        { error: "Rol no permitido. Debe ser Administrador o Subadministrador" },
+        { error: "Rol no permitido. Debe ser Administrador" },
         { status: 400 }
       );
     }
@@ -111,9 +101,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
         { status: 400 }
       );
     }
-    const rol = await prisma.role.findUnique({
-      where: { nombre: body.rol },
-    });
+    const rol = await getRole(body.rol);
     if (!rol || !rol.activo) {
       return NextResponse.json(
         { error: "Rol no válido en el sistema" },
@@ -130,16 +118,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     );
   }
 
-  const updated = await prisma.usuario.update({
-    where: { id: targetId },
-    data,
-    select: {
-      id: true,
-      correo: true,
-      activo: true,
-      rol: { select: { nombre: true } },
-    },
-  });
+  const updated = await updateUser(targetId, data);
 
   return NextResponse.json(updated);
 }

@@ -1,7 +1,6 @@
 import {
   SUPERADMIN,
   ADMINISTRADOR,
-  SUBADMINISTRADOR,
 } from "./roles";
 
 export const ESTADOS_ACTIVIDAD = [
@@ -30,7 +29,7 @@ export interface UserLite {
  * Verifica si un usuario puede gestionar una actividad según su rol
  * y su organización (aislamiento).
  * - SuperAdmin: acceso total.
- * - Admin/Subadm: solo si la actividad pertenece a su organización.
+ * - Administrador: solo si la actividad pertenece a su organización.
  */
 export function puedeAccederActividad(
   user: UserLite,
@@ -38,7 +37,7 @@ export function puedeAccederActividad(
 ): boolean {
   if (user.rol === SUPERADMIN) return true;
   if (
-    (user.rol === ADMINISTRADOR || user.rol === SUBADMINISTRADOR) &&
+    (user.rol === ADMINISTRADOR) &&
     user.organizacionId != null &&
     organizacionId === user.organizacionId
   ) {

@@ -31,7 +31,7 @@ interface InitialData {
 interface ActividadFormProps {
   modo: "crear" | "editar";
   basePath: string;                  // "/dashboard/actividades" o "/superadmin/actividades"
-  organizacionIdFijo?: number | null; // Para Admin/Subadm: no editable
+  organizacionIdFijo?: number | null; // Para Administrador: no editable
   mostrarOrgSelector?: boolean;       // Para SuperAdmin
   organizacionId?: number;            // Para edición
   initialData?: InitialData;
@@ -125,7 +125,7 @@ export default function ActividadForm({
       inscripciones_abiertas: form.inscripciones_abiertas,
     };
 
-    // SuperAdmin elige org; Admin/Subadm la fija está implicita en el backend
+    // SuperAdmin elige org; Administrador la fija está implicita en el backend
     if (mostrarOrgSelector) {
       payload.organizacion_id = Number(form.organizacion_id);
     }

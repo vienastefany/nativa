@@ -1,16 +1,9 @@
+import { getUser, getUserByEmail, updateUser } from "@/lib/db/repository";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { getServerSession } from "next-auth";
-import { PrismaClient } from "@prisma/client";
-import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
-
-// ============================================
-// Cliente de Prisma ESTÁNDAR con driver adapter
-// ============================================
-const adapter = new PrismaMariaDb(process.env.DATABASE_URL!);
-const prisma = new PrismaClient({ adapter });
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -28,17 +21,9 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const usuario = await prisma.usuario.findUnique({
-          where: {
-            correo: credentials.correo as string,
-          },
-          include: {
-            rol: true,
-            organizacion: true,
-          },
-        });
+        const usuario = await getUserByEmail(credentials.correo as string);
 
-        if (!usuario || !usuario.activo) {
+        if (!usuario || !usuario.activo || !["SuperAdmin", "Administrador", "Participante"].includes(usuario.rol.nombre)) {
           return null;
         }
 
@@ -51,10 +36,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        await prisma.usuario.update({
-          where: { id: usuario.id },
-          data: { ultimo_acceso: new Date() },
-        });
+        await updateUser(usuario.id, { ultimo_acceso: new Date() });
 
         return {
           id: usuario.id.toString(),
@@ -76,6 +58,12 @@ export const authOptions: NextAuthOptions = {
         token.rolId = user.rolId;
         token.organizacionId = user.organizacionId;
         token.organizacionNombre = user.organizacionNombre;
+      } else if (token.id) {
+        const current = await getUser(Number(token.id));
+        token.rol = current?.activo && ["SuperAdmin", "Administrador", "Participante"].includes(current.rol.nombre) ? current.rol.nombre : "SinAcceso";
+        token.rolId = current?.rol_id ?? 0;
+        token.organizacionId = current?.organizacion_id ?? null;
+        token.organizacionNombre = current?.organizacion?.nombre ?? null;
       }
       return token;
     },

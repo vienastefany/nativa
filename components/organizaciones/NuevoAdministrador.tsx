@@ -126,7 +126,6 @@ export default function NuevoAdministrador({
                   className="input"
                 >
                   <option value="Administrador">Administrador</option>
-                  <option value="Subadministrador">Subadministrador</option>
                 </select>
               </div>
 

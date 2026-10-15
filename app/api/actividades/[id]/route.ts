@@ -1,5 +1,6 @@
+import type { NuevaActividad, EstadoActividad } from "@/lib/db/types";
+import { getActivityDetail, getActivity, updateActivity } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth-guard";
 import {
   puedeAccederActividad,
@@ -24,37 +25,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
   }
 
   try {
-    const actividad = await prisma.actividadFormativa.findUnique({
-      where: { id: actividadId },
-      include: {
-        tipo_actividad: { select: { id: true, nombre: true } },
-        organizacion: { select: { id: true, nombre: true } },
-        creador: {
-          select: { id: true, correo: true },
-        },
-        sesiones: {
-          orderBy: { fecha: "asc" },
-          select: {
-            id: true,
-            fecha: true,
-            hora_inicio: true,
-            hora_fin: true,
-            modalidad: true,
-            lugar: true,
-            enlace_virtual: true,
-            estado: true,
-            qr_token: true,
-          },
-        },
-        _count: {
-          select: {
-            inscripciones: {
-              where: { estado: "Inscrita" },
-            },
-          },
-        },
-      },
-    });
+    const actividad = await getActivityDetail(actividadId);
 
     if (!actividad) {
       return NextResponse.json(
@@ -96,9 +67,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
   }
 
   try {
-    const existente = await prisma.actividadFormativa.findUnique({
-      where: { id: actividadId },
-    });
+    const existente = await getActivity(actividadId);
 
     if (!existente) {
       return NextResponse.json(
@@ -126,8 +95,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
       ? Number(body.tipo_actividad_id)
       : existente.tipo_actividad_id;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: any = {
+    const data: Partial<NuevaActividad> = {
       titulo,
       tipo_actividad_id: tipoActividadId,
       descripcion:
@@ -155,10 +123,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
           : existente.inscripciones_abiertas,
     };
 
-    const actividad = await prisma.actividadFormativa.update({
-      where: { id: actividadId },
-      data,
-    });
+    const actividad = await updateActivity(actividadId, data);
 
     return NextResponse.json(actividad);
   } catch (error) {
@@ -186,9 +151,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   }
 
   try {
-    const existente = await prisma.actividadFormativa.findUnique({
-      where: { id: actividadId },
-    });
+    const existente = await getActivity(actividadId);
 
     if (!existente) {
       return NextResponse.json(
@@ -205,11 +168,10 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
     const ESTADOS = ESTADOS_ACTIVIDAD;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const data: any = {};
+    const data: Partial<NuevaActividad> = {};
 
-    if (typeof body.estado === "string" && ESTADOS.includes(body.estado)) {
-      data.estado = body.estado;
+    if (typeof body.estado === "string" && ESTADOS.includes(body.estado as EstadoActividad)) {
+      data.estado = body.estado as EstadoActividad;
     }
     if (typeof body.inscripciones_abiertas === "boolean") {
       data.inscripciones_abiertas = body.inscripciones_abiertas;
@@ -222,10 +184,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       );
     }
 
-    const actividad = await prisma.actividadFormativa.update({
-      where: { id: actividadId },
-      data,
-    });
+    const actividad = await updateActivity(actividadId, data);
 
     return NextResponse.json(actividad);
   } catch (error) {

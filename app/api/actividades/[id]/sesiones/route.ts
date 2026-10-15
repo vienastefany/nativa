@@ -1,5 +1,5 @@
+import { getActivity, listSessions, createSession } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth-guard";
 import {
   puedeAccederActividad,
@@ -7,7 +7,7 @@ import {
   fechaStrToDate,
   horaStrToDate,
 } from "@/lib/actividades";
-import type { Modalidad } from "@prisma/client";
+import type { Modalidad } from "@/lib/db/types";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -30,10 +30,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
   }
 
   try {
-    const actividad = await prisma.actividadFormativa.findUnique({
-      where: { id: actividadId },
-      select: { id: true, organizacion_id: true },
-    });
+    const actividad = await getActivity(actividadId);
 
     if (!actividad) {
       return NextResponse.json(
@@ -46,21 +43,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    const sesiones = await prisma.sesion.findMany({
-      where: { actividad_formativa_id: actividadId },
-      orderBy: [{ fecha: "asc" }, { hora_inicio: "asc" }],
-      select: {
-        id: true,
-        fecha: true,
-        hora_inicio: true,
-        hora_fin: true,
-        modalidad: true,
-        lugar: true,
-        enlace_virtual: true,
-        estado: true,
-        qr_token: true,
-      },
-    });
+    const sesiones = await listSessions(actividadId);
 
     return NextResponse.json(sesiones);
   } catch (error) {
@@ -88,10 +71,7 @@ export async function POST(request: NextRequest, { params }: Params) {
   }
 
   try {
-    const actividad = await prisma.actividadFormativa.findUnique({
-      where: { id: actividadId },
-      select: { id: true, organizacion_id: true },
-    });
+    const actividad = await getActivity(actividadId);
 
     if (!actividad) {
       return NextResponse.json(
@@ -163,8 +143,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       );
     }
 
-    const sesion = await prisma.sesion.create({
-      data: {
+    const sesion = await createSession({
         actividad_formativa_id: actividadId,
         fecha: fechaStrToDate(fecha),
         hora_inicio: horaStrToDate(horaInicio),
@@ -173,18 +152,7 @@ export async function POST(request: NextRequest, { params }: Params) {
         lugar: lugar || null,
         enlace_virtual: enlaceVirtual || null,
         estado: "Programada",
-      },
-      select: {
-        id: true,
-        fecha: true,
-        hora_inicio: true,
-        hora_fin: true,
-        modalidad: true,
-        lugar: true,
-        enlace_virtual: true,
-        estado: true,
-      },
-    });
+      });
 
     return NextResponse.json(sesion, { status: 201 });
   } catch (error) {

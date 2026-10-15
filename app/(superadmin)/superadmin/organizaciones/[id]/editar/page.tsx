@@ -1,7 +1,7 @@
+import { getOrganization } from "@/lib/db/repository";
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import OrganizacionForm from "@/components/organizaciones/OrganizacionForm";
 import { SUPERADMIN } from "@/lib/auth-guard";
 
@@ -24,9 +24,7 @@ export default async function EditarOrganizacionPage({
     notFound();
   }
 
-  const organizacion = await prisma.organizacion.findUnique({
-    where: { id: organizacionId },
-  });
+  const organizacion = await getOrganization(organizacionId);
 
   if (!organizacion) {
     notFound();

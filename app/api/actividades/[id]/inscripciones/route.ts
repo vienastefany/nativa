@@ -1,5 +1,5 @@
+import { getActivity, listEnrollments } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth-guard";
 import { puedeAccederActividad } from "@/lib/actividades";
 
@@ -21,10 +21,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
   }
 
   try {
-    const actividad = await prisma.actividadFormativa.findUnique({
-      where: { id: actividadId },
-      select: { id: true, organizacion_id: true },
-    });
+    const actividad = await getActivity(actividadId);
 
     if (!actividad) {
       return NextResponse.json(
@@ -37,15 +34,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    const inscripciones = await prisma.inscripcion.findMany({
-      where: { actividad_formativa_id: actividadId },
-      orderBy: { fecha_inscripcion: "asc" },
-      include: {
-        participante: {
-          select: { id: true, nombres: true, apellidos: true, dni: true, telefono: true },
-        },
-      },
-    });
+    const inscripciones = await listEnrollments(actividadId);
 
     return NextResponse.json(
       inscripciones.map((i) => ({

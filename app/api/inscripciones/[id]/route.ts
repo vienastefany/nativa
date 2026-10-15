@@ -1,8 +1,8 @@
+import { getEnrollment, updateEnrollment } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth-guard";
 import { puedeAccederActividad } from "@/lib/actividades";
-import type { EstadoInscripcion } from "@prisma/client";
+import type { EstadoInscripcion } from "@/lib/db/types";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -46,16 +46,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
   const estadoEnum = estado as EstadoInscripcion;
 
   try {
-    const inscripcion = await prisma.inscripcion.findUnique({
-      where: { id: inscripcionId },
-      select: {
-        id: true,
-        estado: true,
-        actividad_formativa: {
-          select: { organizacion_id: true },
-        },
-      },
-    });
+    const inscripcion = await getEnrollment(inscripcionId);
 
     if (!inscripcion) {
       return NextResponse.json(
@@ -68,18 +59,9 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 
-    const actualizada = await prisma.inscripcion.update({
-      where: { id: inscripcionId },
-      data:
-        estadoEnum === "Cancelada"
+    const actualizada = await updateEnrollment(inscripcionId, estadoEnum === "Cancelada"
           ? { estado: estadoEnum, fecha_cancelacion: new Date() }
-          : { estado: estadoEnum, fecha_cancelacion: null },
-      include: {
-        participante: {
-          select: { id: true, nombres: true, apellidos: true, dni: true },
-        },
-      },
-    });
+          : { estado: estadoEnum, fecha_cancelacion: null });
 
     return NextResponse.json({
       id: actualizada.id,

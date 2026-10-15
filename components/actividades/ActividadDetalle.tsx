@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import SesionAsistencia from "./SesionAsistencia";
 import {
   ArrowLeft,
   Pencil,
@@ -124,6 +125,7 @@ export default function ActividadDetalle({
   mostrarOrganizacion = false,
 }: ActividadDetalleProps) {
   const [actividad, setActividad] = useState<ActividadDetalle | null>(null);
+  const [sesionAsistencia, setSesionAsistencia] = useState<Sesion | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
@@ -896,6 +898,7 @@ export default function ActividadDetalle({
                       </td>
                       <td>
                         <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => setSesionAsistencia(s)} className="btn btn-secondary text-xs" title="Compartir sesión y ver asistencia"><Share2 size={16} /> Compartir / Asistencia</button>
                           <select
                             value={s.estado}
                             onChange={(e) =>
@@ -941,6 +944,7 @@ export default function ActividadDetalle({
           )}
         </div>
       </section>
+      {sesionAsistencia && <SesionAsistencia key={sesionAsistencia.id} sesionId={sesionAsistencia.id} fecha={formatFecha(sesionAsistencia.fecha)} onClose={() => setSesionAsistencia(null)} />}
     </div>
   );
 }

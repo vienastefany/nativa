@@ -6,17 +6,21 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:db": "node scripts/test-db.mjs",
+    "test:runtime": "node scripts/test-runtime.mjs"
   },
   "dependencies": {
-    "@prisma/adapter-mariadb": "^7.10.0",
-    "@prisma/client": "^7.10.0",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.39.0",
     "mysql2": "^3.24.3",
     "next": "16.3.4",
     "next-auth": "^4.24.15",
+    "qrcode": "^1.5.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },
@@ -24,11 +28,11 @@
     "@tailwindcss/postcss": "^4",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
-    "prisma": "^7.10.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

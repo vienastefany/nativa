@@ -1,7 +1,7 @@
+import { getActivity } from "@/lib/db/repository";
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { SUPERADMIN } from "@/lib/auth-guard";
 import ActividadForm from "@/components/actividades/ActividadForm";
 
@@ -18,12 +18,7 @@ export default async function EditarActividadPage({
   const actividadId = Number(id);
   if (!Number.isInteger(actividadId)) notFound();
 
-  const actividad = await prisma.actividadFormativa.findUnique({
-    where: { id: actividadId },
-    include: {
-      organizacion: { select: { id: true, nombre: true } },
-    },
-  });
+  const actividad = await getActivity(actividadId);
 
   if (!actividad) notFound();
 

@@ -1,5 +1,6 @@
+import { RecordNotFoundError, isDuplicateEntry } from "@/lib/db";
+import { getOrganizationDetail, updateOrganization } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { isSuperAdmin } from "@/lib/auth-guard";
 
 type Params = { params: Promise<{ id: string }> };
@@ -19,26 +20,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
   }
 
   try {
-    const organizacion = await prisma.organizacion.findUnique({
-      where: { id: organizacionId },
-      include: {
-        usuarios: {
-          include: {
-            rol: true,
-          },
-          orderBy: { id: "asc" },
-        },
-        actividades: {
-          select: {
-            id: true,
-            titulo: true,
-            estado: true,
-            created_at: true,
-          },
-          orderBy: { id: "desc" },
-        },
-      },
-    });
+    const organizacion = await getOrganizationDetail(organizacionId);
 
     if (!organizacion) {
       return NextResponse.json(
@@ -49,9 +31,6 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
     const administradores = organizacion.usuarios.filter(
       (u) => u.rol.nombre === "Administrador"
-    );
-    const subadministradores = organizacion.usuarios.filter(
-      (u) => u.rol.nombre === "Subadministrador"
     );
 
     const totalActividades = organizacion.actividades.length;
@@ -65,7 +44,6 @@ export async function GET(_request: NextRequest, { params }: Params) {
     return NextResponse.json({
       ...organizacion,
       administradores,
-      subadministradores,
       resumen_actividades: {
         total: totalActividades,
         proximas: actividadesProximas,
@@ -101,10 +79,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
     // Muy importante: solo para activar/desactivar la organización
     // (toggle de estado). Cualquier otro campo se ignora por seguridad.
     if (typeof body.activo === "boolean") {
-      const organizacion = await prisma.organizacion.update({
-        where: { id: organizacionId },
-        data: { activo: body.activo },
-      });
+      const organizacion = await updateOrganization(organizacionId, { activo: body.activo });
       return NextResponse.json(organizacion);
     }
 
@@ -164,21 +139,17 @@ export async function PUT(request: NextRequest, { params }: Params) {
     };
 
     // Actualiza solo los campos presentes; activo tiene default propio
-    const organizacion = await prisma.organizacion.update({
-      where: { id: organizacionId },
-      data,
-    });
+    const organizacion = await updateOrganization(organizacionId, data);
 
     return NextResponse.json(organizacion);
   } catch (error) {
-    const err = error as { code?: string };
-    if (err.code === "P2002") {
+    if (isDuplicateEntry(error)) {
       return NextResponse.json(
         { error: "Ya existe otra organización con ese RUC" },
         { status: 409 }
       );
     }
-    if (err.code === "P2025") {
+    if (error instanceof RecordNotFoundError) {
       return NextResponse.json(
         { error: "Organización no encontrada" },
         { status: 404 }

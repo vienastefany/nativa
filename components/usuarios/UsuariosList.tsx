@@ -37,12 +37,10 @@ interface UsuariosListProps {
   editable?: boolean;
 }
 
-const ROLES_CREABLES = ["Administrador", "Subadministrador"];
-const ROLES_EDITABLES = ["Administrador", "Subadministrador"];
+const ROLES_CREABLES = ["Administrador"];
 
 const BADGE_ROL: Record<string, string> = {
   Administrador: "badge-primary",
-  Subadministrador: "badge-info",
   Participante: "badge-violet",
 };
 
@@ -64,7 +62,6 @@ export default function UsuariosList({
   const [estado, setEstado] = useState("");
   const [orgFilter, setOrgFilter] = useState("");
   const [togglingId, setTogglingId] = useState<number | null>(null);
-  const [roleChangingId, setRoleChangingId] = useState<number | null>(null);
 
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -158,26 +155,6 @@ export default function UsuariosList({
     }
   };
 
-  const cambiarRol = async (u: UsuarioRow, nuevoRol: string) => {
-    if (nuevoRol === u.rol.nombre) return;
-    setRoleChangingId(u.id);
-    try {
-      const res = await fetch(`/api/usuarios/${u.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rol: nuevoRol }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Error al cambiar el rol");
-      setToast(`Rol actualizado a ${nuevoRol}`);
-      load();
-    } catch (e) {
-      setError((e as Error).message || "No se pudo cambiar el rol.");
-    } finally {
-      setRoleChangingId(null);
-    }
-  };
-
   const validarForm = (): string | null => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.correo.trim())) {
       return "Ingresa un correo electrónico válido.";
@@ -232,7 +209,6 @@ export default function UsuariosList({
     }
   };
 
-  const esRolEditable = (rolNombre: string) => ROLES_EDITABLES.includes(rolNombre);
 
   return (
     <div>
@@ -275,7 +251,6 @@ export default function UsuariosList({
         >
           <option value="">Todos los roles</option>
           <option value="Administrador">Administrador</option>
-          <option value="Subadministrador">Subadministrador</option>
           <option value="Participante">Participante</option>
         </select>
         <select
@@ -392,22 +367,7 @@ export default function UsuariosList({
                       {editable && (
                         <td>
                           <div className="flex items-center justify-end gap-2">
-                            {esRolEditable(u.rol.nombre) && (
-                              <select
-                                value={u.rol.nombre}
-                                disabled={roleChangingId === u.id || esSelf}
-                                onChange={(e) => cambiarRol(u, e.target.value)}
-                                title={
-                                  esSelf
-                                    ? "No puedes cambiar tu propio rol"
-                                    : "Cambiar rol"
-                                }
-                                className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 outline-none transition focus:border-primary-500 disabled:cursor-not-allowed disabled:opacity-50"
-                              >
-                                <option value="Administrador">Administrador</option>
-                                <option value="Subadministrador">Subadministrador</option>
-                              </select>
-                            )}
+
                             <button
                               onClick={() => toggleEstado(u)}
                               disabled={togglingId === u.id || esSelf}
@@ -465,7 +425,7 @@ export default function UsuariosList({
 
             <p className="mb-4 text-sm text-slate-500">
               Se creará una cuenta para acceder al sistema. Solo pueden crearse
-              usuarios Administrador o Subadministrador.
+              usuarios Administrador.
             </p>
 
             {formError && (

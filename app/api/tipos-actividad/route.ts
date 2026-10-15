@@ -1,5 +1,5 @@
+import { listActivityTypes } from "@/lib/db/repository";
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { canManageActividades } from "@/lib/auth-guard";
 
 export async function GET() {
@@ -8,11 +8,7 @@ export async function GET() {
   }
 
   try {
-    const tipos = await prisma.tipoActividad.findMany({
-      where: { activo: true },
-      orderBy: { nombre: "asc" },
-      select: { id: true, nombre: true },
-    });
+    const tipos = await listActivityTypes();
     return NextResponse.json(tipos);
   } catch (error) {
     console.error("Error al listar tipos de actividad:", error);

@@ -1,5 +1,5 @@
+import { getSession, updateSession, deleteSession } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth-guard";
 import {
   puedeAccederActividad,
@@ -8,7 +8,7 @@ import {
   fechaStrToDate,
   horaStrToDate,
 } from "@/lib/actividades";
-import type { Modalidad, EstadoSesion } from "@prisma/client";
+import type { Modalidad, EstadoSesion } from "@/lib/db/types";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -19,17 +19,7 @@ async function obtenerSesionConAcceso(
   sesionId: number,
   user: { rol: string; organizacionId: number | null }
 ) {
-  const sesion = await prisma.sesion.findUnique({
-    where: { id: sesionId },
-    include: {
-      actividad_formativa: {
-        select: { id: true, organizacion_id: true },
-      },
-      _count: {
-        select: { asistencias: true },
-      },
-    },
-  });
+  const sesion = await getSession(sesionId);
 
   if (!sesion) return null;
   if (!puedeAccederActividad(user, sesion.actividad_formativa.organizacion_id)) {
@@ -124,27 +114,14 @@ export async function PUT(request: NextRequest, { params }: Params) {
       );
     }
 
-    const updated = await prisma.sesion.update({
-      where: { id: sesionId },
-      data: {
+    const updated = await updateSession(sesionId, {
         fecha: fechaStrToDate(fecha),
         hora_inicio: horaStrToDate(horaInicio),
         hora_fin: horaStrToDate(horaFin),
         modalidad,
         lugar: lugar || null,
         enlace_virtual: enlaceVirtual || null,
-      },
-      select: {
-        id: true,
-        fecha: true,
-        hora_inicio: true,
-        hora_fin: true,
-        modalidad: true,
-        lugar: true,
-        enlace_virtual: true,
-        estado: true,
-      },
-    });
+      });
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -193,20 +170,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
       );
     }
 
-    const updated = await prisma.sesion.update({
-      where: { id: sesionId },
-      data: { estado },
-      select: {
-        id: true,
-        fecha: true,
-        hora_inicio: true,
-        hora_fin: true,
-        modalidad: true,
-        lugar: true,
-        enlace_virtual: true,
-        estado: true,
-      },
-    });
+    const updated = await updateSession(sesionId, { estado });
 
     return NextResponse.json(updated);
   } catch (error) {
@@ -254,7 +218,7 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
       );
     }
 
-    await prisma.sesion.delete({ where: { id: sesionId } });
+    await deleteSession(sesionId);
 
     return NextResponse.json({ ok: true });
   } catch (error) {

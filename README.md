@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sistema de Gestión de Actividades Formativas
 
-## Getting Started
+Aplicación para administrar organizaciones, usuarios, actividades formativas, sesiones e inscripciones públicas. Construida con Next.js 16, React 19, TypeScript, Tailwind CSS 4 y NextAuth. El backend se conecta a MySQL/MariaDB con `mysql2` y consultas SQL parametrizadas.
 
-First, run the development server:
+Toda la documentación del sistema se guarda en `D:\NATIVATEC\NATIVATEC_DOC`. Allí están `DOCUMENTACION_PROYECTO.md`, `Documentacion_Sistema_Gestion_Nativa.docx` y `ESQUEMA_BD.sql`, con arquitectura, funciones, datos, configuración y esquema SQL sin registros ni credenciales.
 
-```bash
+## Desarrollo
+
+Requiere Node.js compatible, BD con esquema y catálogos, y variables locales `DATABASE_URL`, `NEXTAUTH_SECRET` y `NEXTAUTH_URL`.
+
+```powershell
+npm ci
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Configurar `.env.local` a partir de `.env.example`. Abrir http://localhost:3000. La raíz dirige a `/login`. La BD existente se conserva; para una instalación vacía se puede importar `ESQUEMA_BD.sql` y luego inicializar roles/catálogos. No hay seed completo de estos datos.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+El pool compartido está en `lib/db/index.ts`; las consultas SQL y sus tipos están en `lib/db/repository.ts` y `lib/db/types.ts`. `lib/db/registration.ts` controla la inscripción pública mediante transacción y bloqueo de cupo. Las credenciales y consultas se ejecutan exclusivamente en el servidor.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Verificación y producción
 
-## Learn More
+```powershell
+npx tsc --noEmit
+npm run lint
+npm run build
+npm run test:db
+npm run test:runtime
+npm run start
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Estado
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Existen módulos de organizaciones, administradores, actividades, sesiones compartibles, inscripciones, asistencia por QR, reportes PDF/Excel y dashboards. El Administrador gestiona su organización; SuperAdmin tiene alcance global. El rol Subadministrador fue retirado. Siguen pendientes el dashboard participante y la página de configuración.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`test:db` verifica operaciones SQL con rollback; `test:runtime` requiere build previo, crea registros de prueba, arranca temporalmente en el puerto 3197 y limpia registros/servidor al finalizar. Ambos necesitan la BD y catálogos configurados.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Consultar la documentación antes de desplegar: explica reconocimiento del participante durante 30 días, DNI alternativo, ventanas QR, reportes y pendientes de validación/cupos. `NEXTAUTH_URL` debe ser accesible desde los teléfonos que escanean. `scripts/migrate-admin-role.mjs` convierte cuentas del rol retirado conservando su organización; ya fue aplicado a la BD actual con autorización.

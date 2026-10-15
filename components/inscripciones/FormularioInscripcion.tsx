@@ -76,7 +76,7 @@ export default function FormularioInscripcion({
         </div>
         <p className="font-semibold text-emerald-800">{exito}</p>
         <p className="mt-1 text-sm text-emerald-600">
-          Nos vemos en la actividad.
+          Este navegador te recordará durante 30 días para registrar tu asistencia al escanear el QR de la sesión. Si usas otro navegador, podrás ingresar tu DNI.
         </p>
       </div>
     );

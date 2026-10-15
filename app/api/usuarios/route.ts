@@ -1,18 +1,16 @@
+import type { FiltroUsuarios } from "@/lib/db/repository";
+import { listUsers, getOrganization, getRole, getUserByEmail, createUser } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { Prisma } from "@prisma/client";
-import { prisma } from "@/lib/db";
 import {
   getSessionUser,
   SUPERADMIN,
   ADMINISTRADOR,
-  SUBADMINISTRADOR,
 } from "@/lib/auth-guard";
 
-const ROLES_CREABLES = [ADMINISTRADOR, SUBADMINISTRADOR];
+const ROLES_CREABLES = [ADMINISTRADOR];
 const ROLES_FILTRABLES = [
   ADMINISTRADOR,
-  SUBADMINISTRADOR,
   "Participante",
 ];
 
@@ -23,7 +21,7 @@ export async function GET(request: NextRequest) {
   }
 
   const esSuperAdmin = user.rol === SUPERADMIN;
-  const esGestor = user.rol === ADMINISTRADOR || user.rol === SUBADMINISTRADOR;
+  const esGestor = user.rol === ADMINISTRADOR;
   if (!esSuperAdmin && !esGestor) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
@@ -41,12 +39,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const where: Prisma.UsuarioWhereInput = {
-    rol: { nombre: { not: SUPERADMIN } },
-  };
+  const where: FiltroUsuarios = {};
 
   if (rol) {
-    where.rol = { nombre: rol };
+    where.rol = rol;
   }
 
   if (esSuperAdmin) {
@@ -59,7 +55,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (q) {
-    where.correo = { contains: q };
+    where.correo = q;
   }
 
   if (estado === "activo") {
@@ -68,22 +64,7 @@ export async function GET(request: NextRequest) {
     where.activo = false;
   }
 
-  const usuarios = await prisma.usuario.findMany({
-    where,
-    select: {
-      id: true,
-      correo: true,
-      activo: true,
-      ultimo_acceso: true,
-      created_at: true,
-      rol: { select: { nombre: true } },
-      organizacion: { select: { id: true, nombre: true } },
-      participante: {
-        select: { nombres: true, apellidos: true, dni: true },
-      },
-    },
-    orderBy: { id: "desc" },
-  });
+  const usuarios = await listUsers(where);
 
   return NextResponse.json(usuarios);
 }
@@ -131,7 +112,7 @@ export async function POST(request: NextRequest) {
   }
   if (!ROLES_CREABLES.includes(rolNombre)) {
     return NextResponse.json(
-      { error: "Rol no permitido. Debe ser Administrador o Subadministrador" },
+      { error: "Rol no permitido. Debe ser Administrador" },
       { status: 400 }
     );
   }
@@ -155,9 +136,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  const organizacion = await prisma.organizacion.findUnique({
-    where: { id: organizacionId },
-  });
+  const organizacion = await getOrganization(organizacionId);
   if (!organizacion) {
     return NextResponse.json(
       { error: "Organización no encontrada" },
@@ -171,9 +150,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const rol = await prisma.role.findUnique({
-    where: { nombre: rolNombre },
-  });
+  const rol = await getRole(rolNombre);
   if (!rol || !rol.activo) {
     return NextResponse.json(
       { error: "Rol no válido en el sistema" },
@@ -181,9 +158,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const correoExiste = await prisma.usuario.findUnique({
-    where: { correo },
-  });
+  const correoExiste = await getUserByEmail(correo);
   if (correoExiste) {
     return NextResponse.json(
       { error: "Ya existe un usuario con ese correo" },
@@ -193,15 +168,13 @@ export async function POST(request: NextRequest) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const usuario = await prisma.usuario.create({
-    data: {
+  const usuario = await createUser({
       correo,
       password: hashedPassword,
       rol_id: rol.id,
       organizacion_id: organizacionId,
       activo: true,
-    },
-  });
+    });
 
   return NextResponse.json(
     {

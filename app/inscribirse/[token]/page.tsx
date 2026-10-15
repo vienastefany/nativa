@@ -1,5 +1,5 @@
+import { getActivityByToken } from "@/lib/db/repository";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/db";
 import {
   BookOpen,
   Users,
@@ -18,20 +18,7 @@ export default async function InscribirsePage({
   const tokenTrim = token.trim();
   if (!tokenTrim) notFound();
 
-  const actividad = await prisma.actividadFormativa.findUnique({
-    where: { token_inscripcion: tokenTrim },
-    include: {
-      tipo_actividad: { select: { nombre: true } },
-      organizacion: { select: { nombre: true } },
-      _count: {
-        select: {
-          inscripciones: {
-            where: { estado: "Inscrita" },
-          },
-        },
-      },
-    },
-  });
+  const actividad = await getActivityByToken(tokenTrim);
 
   if (!actividad) notFound();
 

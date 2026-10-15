@@ -1,7 +1,7 @@
+import { getActivity } from "@/lib/db/repository";
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { canManageActividades } from "@/lib/auth-guard";
 import ActividadForm from "@/components/actividades/ActividadForm";
 
@@ -18,16 +18,11 @@ export default async function EditarActividadDashboardPage({
   const actividadId = Number(id);
   if (!Number.isInteger(actividadId)) notFound();
 
-  const actividad = await prisma.actividadFormativa.findUnique({
-    where: { id: actividadId },
-    include: {
-      organizacion: { select: { id: true, nombre: true } },
-    },
-  });
+  const actividad = await getActivity(actividadId);
 
   if (!actividad) notFound();
 
-  // Admin/Subadm solo puede editar actividades de su organización
+  // Administrador solo puede editar actividades de su organización
   if (
     session.user.organizacionId != null &&
     actividad.organizacion_id !== session.user.organizacionId

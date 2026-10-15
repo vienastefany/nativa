@@ -1,8 +1,8 @@
+import { getOrganizationDetail } from "@/lib/db/repository";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
 import { SUPERADMIN } from "@/lib/auth-guard";
 import NuevoAdministrador from "@/components/organizaciones/NuevoAdministrador";
 import {
@@ -38,21 +38,7 @@ export default async function DetalleOrganizacionPage({
     notFound();
   }
 
-  const organizacion = await prisma.organizacion.findUnique({
-    where: { id: organizacionId },
-    include: {
-      usuarios: {
-        include: {
-          rol: true,
-        },
-        orderBy: { id: "asc" },
-      },
-      actividades: {
-        select: { id: true, titulo: true, estado: true, created_at: true },
-        orderBy: { id: "desc" },
-      },
-    },
-  });
+  const organizacion = await getOrganizationDetail(organizacionId);
 
   if (!organizacion) {
     notFound();
@@ -61,10 +47,7 @@ export default async function DetalleOrganizacionPage({
   const administradores = organizacion.usuarios.filter(
     (u) => u.rol.nombre === "Administrador"
   );
-  const subadministradores = organizacion.usuarios.filter(
-    (u) => u.rol.nombre === "Subadministrador"
-  );
-  const administradoresList = [...administradores, ...subadministradores];
+  const administradoresList = administradores;
 
   const totalActividades = organizacion.actividades.length;
   const actividadesProximas = organizacion.actividades.filter((a) =>

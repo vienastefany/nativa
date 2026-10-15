@@ -1,11 +1,11 @@
+import type { FiltroActividades } from "@/lib/db/repository";
+import { listActivities, getOrganization, createActivity } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
 import { randomBytes } from "node:crypto";
-import { prisma } from "@/lib/db";
 import {
   getSessionUser,
   SUPERADMIN,
   ADMINISTRADOR,
-  SUBADMINISTRADOR,
 } from "@/lib/auth-guard";
 
 export async function GET(request: NextRequest) {
@@ -27,15 +27,14 @@ export async function GET(request: NextRequest) {
 
   const isSuperAdmin = user.rol === SUPERADMIN;
   const isAdmin =
-    user.rol === ADMINISTRADOR || user.rol === SUBADMINISTRADOR;
+    user.rol === ADMINISTRADOR;
 
   if (!isSuperAdmin && !isAdmin) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {};
+    const where: FiltroActividades = {};
 
     // Aislamiento por organización
     if (isSuperAdmin) {
@@ -53,32 +52,13 @@ export async function GET(request: NextRequest) {
 
     // Filtros
     if (q) {
-      where.titulo = { contains: q };
+      where.titulo = q;
     }
     if (estado && ESTADOS_VALIDOS.includes(estado)) {
       where.estado = estado;
     }
 
-    const actividades = await prisma.actividadFormativa.findMany({
-      where,
-      orderBy: { id: "desc" },
-      include: {
-        tipo_actividad: {
-          select: { nombre: true },
-        },
-        organizacion: {
-          select: { id: true, nombre: true },
-        },
-        _count: {
-          select: {
-            sesiones: true,
-            inscripciones: {
-              where: { estado: "Inscrita" },
-            },
-          },
-        },
-      },
-    });
+    const actividades = await listActivities(where);
 
     return NextResponse.json(
       actividades.map((a) => ({
@@ -114,7 +94,7 @@ export async function POST(request: NextRequest) {
 
   const isSuperAdmin = user.rol === SUPERADMIN;
   const isAdmin =
-    user.rol === ADMINISTRADOR || user.rol === SUBADMINISTRADOR;
+    user.rol === ADMINISTRADOR;
 
   if (!isSuperAdmin && !isAdmin) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -140,7 +120,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Organización: SuperAdmin la elige, Admin/Subadm queda fija a su org
+    // Organización: SuperAdmin la elige, Administrador queda fija a su org
     let organizacionId: number;
     if (isSuperAdmin) {
       organizacionId = Number(body.organizacion_id);
@@ -150,9 +130,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
       }
-      const org = await prisma.organizacion.findUnique({
-        where: { id: organizacionId },
-      });
+      const org = await getOrganization(organizacionId);
       if (!org) {
         return NextResponse.json(
           { error: "Organización no encontrada" },
@@ -189,8 +167,7 @@ export async function POST(request: NextRequest) {
       ? Number(body.capacidad)
       : null;
 
-    const actividad = await prisma.actividadFormativa.create({
-      data: {
+    const actividad = await createActivity({
         titulo,
         tipo_actividad_id: tipoActividadId,
         organizacion_id: organizacionId,
@@ -203,8 +180,7 @@ export async function POST(request: NextRequest) {
         inscripciones_abiertas: false,
         token_inscripcion: randomBytes(12).toString("hex"),
         creado_por: Number(user.id),
-      },
-    });
+      });
 
     return NextResponse.json(actividad, { status: 201 });
   } catch (error) {

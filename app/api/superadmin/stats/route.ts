@@ -1,26 +1,13 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { getGlobalStats } from "@/lib/db/repository";
+import { isSuperAdmin } from "@/lib/auth-guard";
 
 export async function GET() {
+  if (!(await isSuperAdmin())) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
   try {
-    const [
-      totalOrganizaciones,
-      totalUsuarios,
-      totalActividades,
-      totalParticipantes,
-    ] = await Promise.all([
-      prisma.organizacion.count(),
-      prisma.usuario.count(),
-      prisma.actividadFormativa.count(),
-      prisma.participante.count(),
-    ]);
-
-    return NextResponse.json({
-      totalOrganizaciones,
-      totalUsuarios,
-      totalActividades,
-      totalParticipantes,
-    });
+    return NextResponse.json(await getGlobalStats());
   } catch (error) {
     console.error("Error al obtener estadísticas:", error);
     return NextResponse.json(

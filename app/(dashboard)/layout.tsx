@@ -11,6 +11,7 @@ import {
   LogOut,
   GraduationCap,
   Sparkles,
+  FileText,
 } from "lucide-react";
 
 const menuItems = [
@@ -21,6 +22,7 @@ const menuItems = [
     icon: Calendar,
   },
   { name: "Usuarios", href: "/dashboard/usuarios", icon: Users },
+  { name: "Reportes", href: "/dashboard/reportes", icon: FileText },
 ];
 
 export default function DashboardLayout({
@@ -40,6 +42,9 @@ export default function DashboardLayout({
   }
 
   if (!session) {
+    redirect("/login");
+  }
+  if (session.user.rol !== "Administrador" && session.user.rol !== "SuperAdmin") {
     redirect("/login");
   }
 

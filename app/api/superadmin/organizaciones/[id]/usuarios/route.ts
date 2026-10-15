@@ -1,11 +1,11 @@
+import { getOrganization, getRole, getUserByEmail, createUser } from "@/lib/db/repository";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
 import { isSuperAdmin } from "@/lib/auth-guard";
 
 type Params = { params: Promise<{ id: string }> };
 
-const ROLES_PERMITIDOS = ["Administrador", "Subadministrador"];
+const ROLES_PERMITIDOS = ["Administrador"];
 
 export async function POST(request: NextRequest, { params }: Params) {
   if (!(await isSuperAdmin())) {
@@ -23,9 +23,7 @@ export async function POST(request: NextRequest, { params }: Params) {
 
   try {
     // Verificar que la organización exista y esté activa
-    const organizacion = await prisma.organizacion.findUnique({
-      where: { id: organizacionId },
-    });
+    const organizacion = await getOrganization(organizacionId);
     if (!organizacion) {
       return NextResponse.json(
         { error: "Organización no encontrada" },
@@ -59,15 +57,13 @@ export async function POST(request: NextRequest, { params }: Params) {
     }
     if (!ROLES_PERMITIDOS.includes(rolNombre)) {
       return NextResponse.json(
-        { error: "Rol no permitido. Debe ser Administrador o Subadministrador" },
+        { error: "Rol no permitido. Debe ser Administrador" },
         { status: 400 }
       );
     }
 
     // Buscar el rol por nombre
-    const rol = await prisma.role.findUnique({
-      where: { nombre: rolNombre },
-    });
+    const rol = await getRole(rolNombre);
     if (!rol || !rol.activo) {
       return NextResponse.json(
         { error: "Rol no válido en el sistema" },
@@ -75,9 +71,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       );
     }
 
-    const correoExiste = await prisma.usuario.findUnique({
-      where: { correo },
-    });
+    const correoExiste = await getUserByEmail(correo);
     if (correoExiste) {
       return NextResponse.json(
         { error: "Ya existe un usuario con ese correo" },
@@ -87,15 +81,13 @@ export async function POST(request: NextRequest, { params }: Params) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const usuario = await prisma.usuario.create({
-      data: {
+    const usuario = await createUser({
         correo,
         password: hashedPassword,
         rol_id: rol.id,
         organizacion_id: organizacionId,
         activo: true,
-      },
-    });
+      });
 
     return NextResponse.json(
       {
