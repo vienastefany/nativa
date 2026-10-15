@@ -85,6 +85,8 @@ async function main() {
   const anonymous = new Client(); const admin = new Client(); const superadmin = new Client(); const sub = new Client(); const participant = new Client(); const bad = new Client();
   await check(await anonymous.request("/api/actividades"), 401, "Actividades sin sesión");
   await check(await anonymous.request("/api/superadmin/stats"), 401, "Estadísticas sin sesión");
+  await check(await anonymous.request("/api/configuracion/organizacion"), 401, "Configuración de organización sin sesión");
+  await check(await anonymous.request("/api/configuracion/cuenta"), 401, "Configuración de cuenta sin sesión");
   for (const [client, account] of [[admin, adminAccount], [superadmin, superAccount]]) {
     await client.login(account.correo, account.password);
     const session = await check(await client.request("/api/auth/session"), 200, "Sesión");
@@ -106,6 +108,52 @@ async function main() {
 
   const newOrg = await check(await superadmin.json("/api/superadmin/organizaciones", "POST", { nombre: `${tag}-API`, ruc: tag.slice(-20) }), 201, "Crear organización"); orgIds.push(newOrg.id);
   assert.equal(newOrg.activo, true);
+  const ownConfig = await check(await admin.request("/api/configuracion/organizacion"), 200, "Configuración de organización propia");
+  assert.equal(ownConfig.organizacion.id, org.id);
+  await check(await admin.json("/api/configuracion/organizacion", "PATCH", null), 400, "Objeto de organización requerido");
+  const configOptions = await check(await superadmin.request("/api/configuracion/organizacion"), 200, "Selector de organizaciones");
+  assert(configOptions.organizaciones.some(item => item.id === org.id));
+  assert(configOptions.organizaciones.some(item => item.id === other.id));
+  assert.equal(configOptions.organizacion, null);
+  const selectedConfig = await check(await superadmin.request(`/api/configuracion/organizacion?organizacion_id=${other.id}`), 200, "Configuración global de organización");
+  assert.equal(selectedConfig.organizacion.id, other.id);
+  await check(await admin.request(`/api/configuracion/organizacion?organizacion_id=${other.id}`), 403, "Administrador no consulta otra organización");
+  const ownOrgUpdated = await check(await admin.json("/api/configuracion/organizacion", "PATCH", {
+    organizacion_id: org.id, nombre: `${tag}-A-configurada`, ruc: org.ruc, direccion: "Dirección QA",
+    telefono: "999123456", correo: "qa@example.invalid", logo_url: "https://example.invalid/logo.png",
+  }), 200, "Administrador actualiza su organización");
+  assert.equal(ownOrgUpdated.organizacion.direccion, "Dirección QA");
+  assert.equal(ownOrgUpdated.organizacion.logo_url, "https://example.invalid/logo.png");
+  await check(await admin.json("/api/configuracion/organizacion", "PATCH", {
+    organizacion_id: org.id, nombre: `${tag}-A-configurada`, logo_url: "javascript:alert(1)",
+  }), 400, "URL de logo insegura rechazada");
+  await check(await admin.json("/api/configuracion/organizacion", "PATCH", {
+    organizacion_id: other.id, nombre: `${tag}-fuera-de-alcance`,
+  }), 403, "Administrador no actualiza otra organización");
+  await check(await superadmin.json("/api/configuracion/organizacion", "PATCH", {
+    organizacion_id: other.id, nombre: `${tag}-B-configurada`, ruc: other.ruc, direccion: "",
+    telefono: "", correo: "", logo_url: "",
+  }), 200, "SuperAdmin actualiza organización seleccionada");
+  const adminAccountInfo = await check(await admin.request("/api/configuracion/cuenta"), 200, "Datos de mi cuenta");
+  assert.equal(adminAccountInfo.correo, adminAccount.correo);
+  assert.equal(adminAccountInfo.nombre, adminAccount.correo, "Correo se muestra como nombre hasta que exista un campo de nombre");
+  await check(await admin.json("/api/configuracion/cuenta", "PATCH", null), 400, "Objeto de contraseña requerido");
+  await check(await admin.json("/api/configuracion/cuenta", "PATCH", {
+    currentPassword: "incorrecta", newPassword: "new-secure-password", confirmPassword: "new-secure-password",
+  }), 400, "Contraseña actual incorrecta rechazada");
+  await check(await admin.json("/api/configuracion/cuenta", "PATCH", {
+    currentPassword: adminAccount.password, newPassword: "new-secure-password", confirmPassword: "otra-password",
+  }), 400, "Confirmación de contraseña distinta rechazada");
+  await check(await admin.json("/api/configuracion/cuenta", "PATCH", {
+    currentPassword: adminAccount.password, newPassword: "new-secure-password", confirmPassword: "new-secure-password",
+  }), 200, "Cambio de contraseña");
+  const oldPasswordClient = new Client();
+  await oldPasswordClient.login(adminAccount.correo, adminAccount.password);
+  assert.equal((await oldPasswordClient.request("/api/auth/session")).data.user, undefined, "Contraseña anterior deja de funcionar");
+  adminAccount.password = "new-secure-password";
+  const newPasswordClient = new Client();
+  await newPasswordClient.login(adminAccount.correo, adminAccount.password);
+  assert.equal((await newPasswordClient.request("/api/auth/session")).data.user.correo, adminAccount.correo, "La nueva contraseña permite iniciar sesión");
   await check(await superadmin.json(`/api/superadmin/organizaciones/${newOrg.id}`, "PUT", { nombre: `${tag}-API-edit`, ruc: newOrg.ruc }), 200, "Editar organización");
   await check(await superadmin.json(`/api/superadmin/organizaciones/${newOrg.id}`, "PATCH", { activo: false }), 200, "Desactivar organización");
   await check(await superadmin.json("/api/superadmin/organizaciones", "POST", { nombre: tag, ruc: newOrg.ruc }), 409, "RUC duplicado");
@@ -221,6 +269,8 @@ async function main() {
   assert.equal(pdf.subarray(0,4).toString(), "%PDF");
   await check(await admin.request("/dashboard/reportes"), 200, "Página reportes administrador");
   await check(await superadmin.request("/superadmin/reportes"), 200, "Página reportes global");
+  await check(await admin.request("/dashboard/configuracion"), 200, "Página configuración administrador");
+  await check(await superadmin.request("/superadmin/configuracion"), 200, "Página configuración SuperAdmin");
   if (process.env.NATIVA_QA_DIR) {
     const { mkdir, writeFile } = await import("node:fs/promises"); const { join } = await import("node:path");
     await mkdir(process.env.NATIVA_QA_DIR, { recursive: true });

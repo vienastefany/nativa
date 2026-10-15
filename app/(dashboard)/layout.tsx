@@ -12,6 +12,7 @@ import {
   GraduationCap,
   Sparkles,
   FileText,
+  Settings,
 } from "lucide-react";
 
 const menuItems = [
@@ -23,6 +24,7 @@ const menuItems = [
   },
   { name: "Usuarios", href: "/dashboard/usuarios", icon: Users },
   { name: "Reportes", href: "/dashboard/reportes", icon: FileText },
+  { name: "Configuración", href: "/dashboard/configuracion", icon: Settings },
 ];
 
 export default function DashboardLayout({

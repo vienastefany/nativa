@@ -30,7 +30,7 @@ npm run start
 
 ## Estado
 
-Existen módulos de organizaciones, administradores, actividades, sesiones compartibles, inscripciones públicas, asistencia por QR, reportes PDF/Excel y dashboards administrativos. El Administrador gestiona su organización; SuperAdmin tiene alcance global. El rol Subadministrador fue retirado. Los participantes no necesitan cuenta ni login: consultan la actividad y se inscriben con su enlace público; la asistencia se registra por separado para cada sesión, validando inscripción activa y evitando duplicados. Siguen pendientes la página de configuración y completar el contenido administrativo correspondiente.
+Existen módulos de organizaciones, administradores, actividades, sesiones compartibles, inscripciones públicas, asistencia por QR, reportes PDF/Excel, dashboards administrativos y configuración. El Administrador gestiona los datos de su propia organización; SuperAdmin puede seleccionar y administrar cualquier organización. Configuración también muestra los datos de la cuenta y permite cambiar contraseña verificando la actual. Como `usuarios` aún no tiene campo de nombre, Mi cuenta muestra el correo como nombre. El logo institucional se configura mediante una URL HTTP(S). El rol Subadministrador fue retirado. Los participantes no necesitan cuenta ni login: consultan la actividad y se inscriben con su enlace público; la asistencia se registra por separado para cada sesión, validando inscripción activa y evitando duplicados. La configuración requiere revisión visual del usuario.
 
 `test:db` verifica operaciones SQL con rollback; `test:runtime` requiere build previo, crea registros de prueba, arranca temporalmente en el puerto 3197 y limpia registros/servidor al finalizar. Ambos necesitan la BD y catálogos configurados.
 

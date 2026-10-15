@@ -120,7 +120,7 @@ export async function createUser(data: NuevoUsuario, executor?: SqlExecutor) {
   const row = required(await getUser(await insert("usuarios", data, executor), executor));
   return { id: row.id, correo: row.correo, activo: row.activo, rol: row.rol };
 }
-export async function updateUser(id: number, data: Partial<Pick<Usuario, "activo" | "rol_id" | "ultimo_acceso">>, executor?: SqlExecutor) {
+export async function updateUser(id: number, data: Partial<Pick<Usuario, "activo" | "rol_id" | "ultimo_acceso" | "password">>, executor?: SqlExecutor) {
   await update("usuarios", id, data, executor);
   const row = required(await getUser(id, executor));
   return { id: row.id, correo: row.correo, activo: row.activo, rol: { nombre: row.rol.nombre } };
