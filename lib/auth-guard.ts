@@ -4,10 +4,9 @@ import { getUser } from "@/lib/db/repository";
 import {
   SUPERADMIN,
   ADMINISTRADOR,
-  PARTICIPANTE,
 } from "@/lib/roles";
 
-export { SUPERADMIN, ADMINISTRADOR, PARTICIPANTE };
+export { SUPERADMIN, ADMINISTRADOR };
 
 /**
  * Obtiene la sesión del servidor. Devuelve null si no hay sesión.
@@ -18,7 +17,7 @@ export async function getSessionUser() {
   const session = await getServerSession(authOptions);
   if (!session?.user) return null;
   const current = await getUser(Number(session.user.id));
-  if (!current?.activo || ![SUPERADMIN, ADMINISTRADOR, PARTICIPANTE].includes(current.rol.nombre)) return null;
+  if (!current?.activo || ![SUPERADMIN, ADMINISTRADOR].includes(current.rol.nombre)) return null;
   return { ...session.user, rol: current.rol.nombre, rolId: current.rol_id,
     organizacionId: current.organizacion_id, organizacionNombre: current.organizacion?.nombre ?? null };
 }

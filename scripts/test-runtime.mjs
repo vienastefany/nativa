@@ -85,11 +85,13 @@ async function main() {
   const anonymous = new Client(); const admin = new Client(); const superadmin = new Client(); const sub = new Client(); const participant = new Client(); const bad = new Client();
   await check(await anonymous.request("/api/actividades"), 401, "Actividades sin sesión");
   await check(await anonymous.request("/api/superadmin/stats"), 401, "Estadísticas sin sesión");
-  for (const [client, account] of [[admin, adminAccount], [superadmin, superAccount], [participant, participantAccount]]) {
+  for (const [client, account] of [[admin, adminAccount], [superadmin, superAccount]]) {
     await client.login(account.correo, account.password);
     const session = await check(await client.request("/api/auth/session"), 200, "Sesión");
     assert.equal(session.user.correo, account.correo);
   }
+  await participant.login(participantAccount.correo, participantAccount.password);
+  assert.equal((await participant.request("/api/auth/session")).data.user, undefined, "El rol Participante no inicia sesión");
   await sub.login(subAccount.correo, subAccount.password);
   assert.equal((await sub.request("/api/auth/session")).data.user, undefined, "El rol retirado no inicia sesión");
   await bad.login(inactiveAccount.correo, inactiveAccount.password);
@@ -99,7 +101,7 @@ async function main() {
   assert((await repo.getUser(adminAccount.id)).ultimo_acceso instanceof Date);
   await check(await admin.request("/api/superadmin/stats"), 401, "Estadísticas restringidas");
   await check(await superadmin.request("/api/superadmin/stats"), 200, "Estadísticas globales");
-  await check(await participant.request("/api/usuarios"), 403, "Participante sin gestión");
+  await check(await participant.request("/api/usuarios"), 401, "Participante sin sesión de gestión");
   await check(await sub.json("/api/usuarios", "POST", { correo: `${tag}-blocked@example.invalid`, password: "qa123456", rol: "Administrador" }), 401, "Subadmin no crea gestores");
 
   const newOrg = await check(await superadmin.json("/api/superadmin/organizaciones", "POST", { nombre: `${tag}-API`, ruc: tag.slice(-20) }), 201, "Crear organización"); orgIds.push(newOrg.id);
@@ -121,7 +123,8 @@ async function main() {
   const otherUser = await check(await superadmin.json(`/api/superadmin/organizaciones/${other.id}/usuarios`, "POST", { correo: `${tag}-other@example.invalid`, password: "qa123456", rol: "Administrador" }), 201, "Gestor de otra organización"); userIds.push(otherUser.id);
   await check(await admin.json(`/api/usuarios/${otherUser.id}`, "PATCH", { activo: false }), 403, "Aislamiento usuarios");
 
-  const activityData = { titulo: tag, tipo_actividad_id: type.id, organizacion_id: other.id, capacidad: 1 };
+  const activityData = { titulo: tag, tipo_actividad_id: type.id, organizacion_id: other.id, capacidad: 1,
+    instructor_nombres: "Instructora QA", instructor_apellidos: "Nativa", instructor_profesion: "Docente" };
   const activity = await check(await admin.json("/api/actividades", "POST", activityData), 201, "Crear actividad");
   assert.equal(activity.organizacion_id, org.id); assert.equal(activity.inscripciones_abiertas, false);
   const foreign = await check(await superadmin.json("/api/actividades", "POST", { ...activityData, titulo: `${tag}-foreign` }), 201, "Actividad otra organización");
@@ -140,7 +143,10 @@ async function main() {
   assert.equal(sessions[0].hora_inicio, "1970-01-01T10:15:00.000Z");
 
   const [dniA, dniB] = [await freshDni(), await freshDni()];
-  await check(await anonymous.request(`/inscribirse/${activity.token_inscripcion}`), 200, "Página pública");
+  const publicActivity = await check(await anonymous.request(`/inscribirse/${activity.token_inscripcion}`), 200, "Página pública");
+  assert(publicActivity.includes("Instructora QA Nativa"), "El enlace público muestra al instructor");
+  assert(publicActivity.includes("11/10/2026") && publicActivity.includes("Virtual") && publicActivity.includes("QA"),
+    "El enlace público muestra fecha, modalidad y lugar de la sesión");
   const registrations = await Promise.all([dniA, dniB].map(dni => anonymous.json(`/api/inscribirse/${activity.token_inscripcion}`, "POST", { nombres: "QA", apellidos: tag, dni })));
   assert.deepEqual(registrations.map(r => r.status).sort(), [201, 409], "Cupo uno ante dos solicitudes concurrentes");
   assert.equal(await repo.countEnrollments(activity.id), 1);
@@ -193,7 +199,7 @@ async function main() {
   const sessionData = { fecha: "2026-10-12", hora_inicio: "09:00", hora_fin: "10:00", modalidad: "Presencial", lugar: "QA Reportes" };
   await check(await admin.json(`/api/actividades/${activity.id}/sesiones`, "POST", sessionData), 201, "Segunda sesión para participantes únicos");
   const foreignSession = await check(await superadmin.json(`/api/actividades/${foreign.id}/sesiones`, "POST", sessionData), 201, "Sesión de otra organización");
-  await check(await participant.request("/api/reportes"), 403, "Participante sin acceso a reportes");
+  await check(await participant.request("/api/reportes"), 401, "Participante sin sesión para reportes");
   await check(await new Client().request("/api/reportes?formato=xlsx"), 401, "Exportación requiere autenticación");
   await check(await admin.request(`/api/reportes?organizacion_id=${other.id}`), 403, "Filtro no amplía alcance");
   await check(await admin.request("/api/reportes?desde=2026-02-30"), 400, "Fecha inexistente rechazada");

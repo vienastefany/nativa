@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
 
         const usuario = await getUserByEmail(credentials.correo as string);
 
-        if (!usuario || !usuario.activo || !["SuperAdmin", "Administrador", "Participante"].includes(usuario.rol.nombre)) {
+        if (!usuario || !usuario.activo || !["SuperAdmin", "Administrador"].includes(usuario.rol.nombre)) {
           return null;
         }
 
@@ -60,7 +60,7 @@ export const authOptions: NextAuthOptions = {
         token.organizacionNombre = user.organizacionNombre;
       } else if (token.id) {
         const current = await getUser(Number(token.id));
-        token.rol = current?.activo && ["SuperAdmin", "Administrador", "Participante"].includes(current.rol.nombre) ? current.rol.nombre : "SinAcceso";
+        token.rol = current?.activo && ["SuperAdmin", "Administrador"].includes(current.rol.nombre) ? current.rol.nombre : "SinAcceso";
         token.rolId = current?.rol_id ?? 0;
         token.organizacionId = current?.organizacion_id ?? null;
         token.organizacionNombre = current?.organizacion?.nombre ?? null;

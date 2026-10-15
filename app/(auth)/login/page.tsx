@@ -55,10 +55,6 @@ export default function LoginPage() {
 
       if (rol === "SuperAdmin") {
         router.push("/superadmin/dashboard");
-      } else if (rol === "Administrador") {
-        router.push("/dashboard");
-      } else if (rol === "Participante") {
-        router.push("/participante/dashboard");
       } else {
         router.push("/dashboard");
       }

@@ -30,7 +30,7 @@ npm run start
 
 ## Estado
 
-Existen módulos de organizaciones, administradores, actividades, sesiones compartibles, inscripciones, asistencia por QR, reportes PDF/Excel y dashboards. El Administrador gestiona su organización; SuperAdmin tiene alcance global. El rol Subadministrador fue retirado. Siguen pendientes el dashboard participante y la página de configuración.
+Existen módulos de organizaciones, administradores, actividades, sesiones compartibles, inscripciones públicas, asistencia por QR, reportes PDF/Excel y dashboards administrativos. El Administrador gestiona su organización; SuperAdmin tiene alcance global. El rol Subadministrador fue retirado. Los participantes no necesitan cuenta ni login: consultan la actividad y se inscriben con su enlace público; la asistencia se registra por separado para cada sesión, validando inscripción activa y evitando duplicados. Siguen pendientes la página de configuración y completar el contenido administrativo correspondiente.
 
 `test:db` verifica operaciones SQL con rollback; `test:runtime` requiere build previo, crea registros de prueba, arranca temporalmente en el puerto 3197 y limpia registros/servidor al finalizar. Ambos necesitan la BD y catálogos configurados.
 
